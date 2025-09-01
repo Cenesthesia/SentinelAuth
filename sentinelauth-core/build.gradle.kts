@@ -90,7 +90,7 @@ tasks.jacocoTestReport {
     )
 }
 
-tasks.register<JacocoCoverageVerification>("JacocoCoverageVerification") {
+tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
     violationRules {
         rule {
             limit {
