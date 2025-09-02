@@ -17,6 +17,7 @@ import java.util.Arrays;
  * @version 1.0
  */
 public class PasswordSecurityUtils {
+    //TODO: Можно вынести параметры в файл конфигурации библиотеки (!Может стать уязвимостью)
     /**Количество итераций алгоритма PBKDF2*/
     private static final int PBKDF2_ITERATIONS = 100000;
     /**Длина ключа PBKDF2*/
@@ -40,7 +41,7 @@ public class PasswordSecurityUtils {
     }
 
     /**
-     * Преобразование пароля в виде массива char в безопасный byte[].
+     * Преобразование пароля в виде массива char в безопасный byte[]. Используемая кодировка UTF-8.
      * <div style="border: 1px solid #d4edda; padding: 10px; margin: 10px 0;">
      *   <em><b> ВАЖНО!</b></em>: Принятый пароль в виде char[] будет затёрт для предотвращения утечек.
      * </div>
@@ -62,7 +63,8 @@ public class PasswordSecurityUtils {
     }
 
     /**
-     * Восстановление пароля из массива byte. Является Deprecated и не рекомендуется к использованию
+     * Восстановление пароля из массива byte. Является Deprecated и не рекомендуется к использованию.
+     * Используемая кодировка UTF-8.
      * <div style="border: 1px solid #d4edda; padding: 10px; margin: 10px 0;">
      *   <em><b> ВАЖНО!</b></em>: Метод пытается восстановить пароль на основе кодировки UTF-8. Метод не
      *   является безопасным: принимаемый байтовый пароль не затирается, восстановление может быть не точным,
@@ -139,7 +141,7 @@ public class PasswordSecurityUtils {
         if (bytes1 == null || bytes2 == null) {
             return false;
         }
-        if (bytes1.length != bytes2.length) {
+        if (bytes1.length != bytes2.length) { //TODO: Можно убрать, уязвима к timing attacks
             return false;
         }
 
