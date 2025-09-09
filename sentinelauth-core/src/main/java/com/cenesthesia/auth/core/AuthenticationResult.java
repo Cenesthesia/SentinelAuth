@@ -44,7 +44,7 @@ public class AuthenticationResult {
      *
      * @return аутентифицированный пользователь
      */
-    public AuthPrincipal getUser() {
+    AuthPrincipal getUser() {
         return user;
     }
 
