@@ -12,7 +12,7 @@ import java.util.Collection;
  * @author Cenesthesia
  * @version 1.0
  */
-public interface AuthenticationService {
+public interface IAuthenticationService {
     /**
      * Выполнить аутентификацию пользователя
      *
@@ -46,9 +46,9 @@ public interface AuthenticationService {
 
     /**
      * Проверить наличие роли у аутентифицированного пользователя
-     * @see AuthenticationService#hasAllRoles(Collection)
-     * @see AuthenticationService#hasAnyRoles(Collection)
-     * @see AuthenticationService#hasAnyRoles(Collection, int)
+     * @see IAuthenticationService#hasAllRoles(Collection)
+     * @see IAuthenticationService#hasAnyRoles(Collection)
+     * @see IAuthenticationService#hasAnyRoles(Collection, int)
      *
      * @param role проверяемая роль
      * @return true, если у пользователя есть роль {@code role}, иначе false
@@ -57,9 +57,9 @@ public interface AuthenticationService {
 
     /**
      * Проверить наличие нескольких ролей у аутентифицированного пользователя
-     * @see AuthenticationService#hasRole(String)
-     * @see AuthenticationService#hasAnyRoles(Collection)
-     * @see AuthenticationService#hasAnyRoles(Collection, int)
+     * @see IAuthenticationService#hasRole(String)
+     * @see IAuthenticationService#hasAnyRoles(Collection)
+     * @see IAuthenticationService#hasAnyRoles(Collection, int)
      *
      * @param roles проверяемые роли
      * @return true, если у пользователя есть все роли из {@code roles}, иначе false
@@ -68,9 +68,9 @@ public interface AuthenticationService {
 
     /**
      * Проверить наличие хотя бы одной роли из {@code roles} у аутентифицированного пользователя
-     * @see AuthenticationService#hasRole(String)
-     * @see AuthenticationService#hasAllRoles(Collection)
-     * @see AuthenticationService#hasAnyRoles(Collection, int)
+     * @see IAuthenticationService#hasRole(String)
+     * @see IAuthenticationService#hasAllRoles(Collection)
+     * @see IAuthenticationService#hasAnyRoles(Collection, int)
      *
      * @param roles проверяемые роли
      * @return true, если у пользователя есть хотя бы одна из ролей {@code roles}, иначе false
@@ -79,9 +79,9 @@ public interface AuthenticationService {
 
     /**
      * Проверить наличие хотя бы {@code count} ролей у аутентифицированного пользователя
-     * @see AuthenticationService#hasRole(String)
-     * @see AuthenticationService#hasAllRoles(Collection)
-     * @see AuthenticationService#hasAnyRoles(Collection)
+     * @see IAuthenticationService#hasRole(String)
+     * @see IAuthenticationService#hasAllRoles(Collection)
+     * @see IAuthenticationService#hasAnyRoles(Collection)
      *
      * @param roles проверяемые роли
      * @param count количество ролей из списка, которыми должен обладать пользователь
@@ -91,9 +91,9 @@ public interface AuthenticationService {
 
     /**
      * Проверить наличие права у аутентифицированного пользователя
-     * @see AuthenticationService#hasAllPermissions(Collection)
-     * @see AuthenticationService#hasAnyPermissions(Collection)
-     * @see AuthenticationService#hasAnyPermissions(Collection, int)
+     * @see IAuthenticationService#hasAllPermissions(Collection)
+     * @see IAuthenticationService#hasAnyPermissions(Collection)
+     * @see IAuthenticationService#hasAnyPermissions(Collection, int)
      *
      * @param permission право на проверку
      * @return true, если у пользователя есть данное право, иначе false
@@ -102,9 +102,9 @@ public interface AuthenticationService {
 
     /**
      * Проверить наличие нескольких прав у аутентифицированного пользователя
-     * @see AuthenticationService#hasPermission(String)
-     * @see AuthenticationService#hasAnyPermissions(Collection)
-     * @see AuthenticationService#hasAnyPermissions(Collection, int)
+     * @see IAuthenticationService#hasPermission(String)
+     * @see IAuthenticationService#hasAnyPermissions(Collection)
+     * @see IAuthenticationService#hasAnyPermissions(Collection, int)
      *
      * @param permissions права на проверку
      * @return true, если у пользователя есть все права из {@code permissions}, иначе false
@@ -114,9 +114,9 @@ public interface AuthenticationService {
     /**
      * Проверить наличие хотя бы одного права из {@code permissions} у аутентифицированного
      * пользователя
-     * @see AuthenticationService#hasPermission(String)
-     * @see AuthenticationService#hasAllPermissions(Collection)
-     * @see AuthenticationService#hasAnyPermissions(Collection, int)
+     * @see IAuthenticationService#hasPermission(String)
+     * @see IAuthenticationService#hasAllPermissions(Collection)
+     * @see IAuthenticationService#hasAnyPermissions(Collection, int)
      *
      * @param permissions права на проверку
      * @return true, если у пользователя есть хотя бы одно право из {@code permissions}, иначе false
@@ -126,9 +126,9 @@ public interface AuthenticationService {
     /**
      * Проверить наличие хотя бы {@code count} прав у аутентифицированного пользователя из
      * {@code permissions}
-     * @see AuthenticationService#hasPermission(String)
-     * @see AuthenticationService#hasAllPermissions(Collection)
-     * @see AuthenticationService#hasAnyPermissions(Collection)
+     * @see IAuthenticationService#hasPermission(String)
+     * @see IAuthenticationService#hasAllPermissions(Collection)
+     * @see IAuthenticationService#hasAnyPermissions(Collection)
      *
      * @param permissions права на проверку
      * @param count количество прав из списка, которыми должен обладать пользователь

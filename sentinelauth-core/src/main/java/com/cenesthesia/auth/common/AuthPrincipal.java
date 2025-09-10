@@ -32,7 +32,7 @@ public class AuthPrincipal {
      * @see AuthPrincipal#AuthPrincipal(String, String)
      * @see AuthPrincipal#AuthPrincipal(String, String, byte[], byte[])
      *
-     * @
+     * @param indf однозначный идентификатор пользователя
      */
     public AuthPrincipal(String indf) {
         this.id = indf;
