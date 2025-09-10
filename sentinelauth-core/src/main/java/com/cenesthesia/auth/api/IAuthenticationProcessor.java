@@ -12,7 +12,7 @@ import com.cenesthesia.auth.core.AuthenticationResult;
  */
 public interface IAuthenticationProcessor {
     /**
-     * Выполнить аутентификацию пользователя
+     * Выполняет аутентификацию пользователя
      *
      * @param principal информация о пользователе
      * @param credentials реквизиты аутентификации

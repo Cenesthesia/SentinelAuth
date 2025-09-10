@@ -31,27 +31,27 @@ public class AuthenticationResult {
     }
 
     /**
-     * Возвращает значение поля {@link AuthenticationResult#success}
+     * Возвращает если авторизация успешна true, иначе false
      *
-     * @return успешность аутентификации
+     * @return значение поля {@link AuthenticationResult#success}
      */
     public boolean isSuccess() {
         return success;
     }
 
     /**
-     * Возвращает значение поля {@link AuthenticationResult#user}
+     * Возвращает аутентифицированного пользователя
      *
-     * @return аутентифицированный пользователь
+     * @return значение поля {@link AuthenticationResult#user}
      */
     AuthPrincipal getUser() {
         return user;
     }
 
     /**
-     * Возвращает значение поля {@link AuthenticationResult#errorMessage}
+     * Возвращает сообщение с ошибками аутентификации (если имеются)
      *
-     * @return сообщение с ошибками аутентификации (если имеются)
+     * @return значение поля {@link AuthenticationResult#errorMessage}
      */
     public String getErrorMessage() {
         return errorMessage;

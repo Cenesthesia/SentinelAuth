@@ -74,108 +74,108 @@ public class AuthPrincipal {
     }
 
     /**
-     * Возвращает значение поля {@link AuthPrincipal#id}
+     * Возвращает уникальный идентификатор пользователя
      *
-     * @return уникальный идентификатор пользователя
+     * @return значение поля {@link AuthPrincipal#id}
      */
     public String getId() {
         return id;
     }
 
     /**
-     * Устанавливает значение для поля {@link AuthPrincipal#id}
+     * Устанавливает новый уникальный идентификатор пользователя
      *
-     * @param id новый уникальный идентификатор пользователя
+     * @param id новое значение для поля {@link AuthPrincipal#id}
      */
     public void setId(String id) {
         this.id = id;
     }
 
     /**
-     * Возвращает значение поля {@link AuthPrincipal#username}
+     * Возвращает наименование пользователя в системе
      *
-     * @return наименование пользователя в системе
+     * @return значение поля {@link AuthPrincipal#username}
      */
     public String getUsername() {
         return username;
     }
 
     /**
-     * Устанавливает значение для поля {@link AuthPrincipal#username}
+     * Устанавливает новое наименование пользователя в системе
      *
-     * @param username наименование пользователя в системе
+     * @param username новое значение для поля {@link AuthPrincipal#username}
      */
     public void setUsername(String username) {
         this.username = username;
     }
 
     /**
-     * Возвращает значение поля {@link AuthPrincipal#passwordHash}
+     * Возвращает пароль
      *
-     * @return пароль
+     * @return значение поля {@link AuthPrincipal#passwordHash}
      */
     public byte[] getPasswordHash() {
         return passwordHash;
     }
 
     /**
-     * Устанавливает значение для поля {@link AuthPrincipal#passwordHash}
+     * Устанавливает новый пароль
      *
-     * @param passwordHash пароль
+     * @param passwordHash новое значение для поля {@link AuthPrincipal#passwordHash}
      */
     public void setPasswordHash(byte[] passwordHash) {
         this.passwordHash = passwordHash;
     }
 
     /**
-     * Возвращает значение поля {@link AuthPrincipal#salt}
+     * Возвращает соль
      *
-     * @return соль
+     * @return значение поля {@link AuthPrincipal#salt}
      */
     public byte[] getSalt() {
         return salt;
     }
 
     /**
-     * Устанавливает значение для поля {@link AuthPrincipal#salt}
+     * Устанавливает новая соль
      *
-     * @param salt соль
+     * @param salt значение для поля {@link AuthPrincipal#salt}
      */
     public void setSalt(byte[] salt) {
         this.salt = salt;
     }
 
     /**
-     * Возвращает значение поля {@link AuthPrincipal#roles}
+     * Возвращает множество ролей пользователя в системе
      *
-     * @return множество ролей пользователя в системе
+     * @return значение поля {@link AuthPrincipal#roles}
      */
     public Set<String> getRoles() {
         return roles;
     }
 
     /**
-     * Устанавливает значение для поля {@link AuthPrincipal#roles}
+     * Устанавливает новое множество ролей пользователя в системе
      *
-     * @param roles множество ролей пользователя в системе
+     * @param roles новое значение для поля {@link AuthPrincipal#roles}
      */
     public void setRoles(Set<String> roles) {
         this.roles = roles;
     }
 
     /**
-     * Возвращает значение поля {@link AuthPrincipal#permissions}
+     * Возвращает множество прав пользователя в системе
      *
-     * @return множество прав пользователя в системе
+     * @return значение поля {@link AuthPrincipal#permissions}
      */
     public Set<String> getPermissions() {
         return permissions;
     }
 
     /**
-     * Устанавливает значение для поля {@link AuthPrincipal#permissions}
+     * Устанавливает новое множество прав пользователя в системе
      *
-     * @param permissions множество прав пользователя в системе
+     * @param permissions новое значение для поля {@link AuthPrincipal#permissions}
      */
     public void setPermissions(Set<String> permissions) {
         this.permissions = permissions;

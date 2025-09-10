@@ -24,7 +24,7 @@ public interface IAuthorizationService {
     boolean hasRole(AuthPrincipal principal, String role);
 
     /**
-     * Проверить наличие нескольких ролей у пользователя
+     * Проверяет наличие нескольких ролей у пользователя
      * @see IAuthorizationService#hasRole(AuthPrincipal, String)
      * @see IAuthorizationService#hasAnyRoles(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyRoles(AuthPrincipal, Collection, int)
@@ -36,7 +36,7 @@ public interface IAuthorizationService {
     boolean hasAllRoles(AuthPrincipal principal, Collection<String> roles);
 
     /**
-     * Проверить наличие хотя бы одной роли из {@code roles} у пользователя
+     * Проверяет наличие хотя бы одной роли из {@code roles} у пользователя
      * @see IAuthorizationService#hasRole(AuthPrincipal, String)
      * @see IAuthorizationService#hasAllRoles(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyRoles(AuthPrincipal, Collection, int)
@@ -48,7 +48,7 @@ public interface IAuthorizationService {
     boolean hasAnyRoles(AuthPrincipal principal, Collection<String> roles);
 
     /**
-     * Проверить наличие хотя бы {@code count} ролей у пользователя
+     * Проверяет наличие хотя бы {@code count} ролей у пользователя
      * @see IAuthorizationService#hasRole(AuthPrincipal, String)
      * @see IAuthorizationService#hasAllRoles(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyRoles(AuthPrincipal, Collection)
@@ -61,7 +61,7 @@ public interface IAuthorizationService {
     boolean hasAnyRoles(AuthPrincipal principal, Collection<String> roles, int count);
 
     /**
-     * Проверить наличие права у пользователя
+     * Проверяет наличие права у пользователя
      * @see IAuthorizationService#hasAllPermissions(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyPermissions(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyPermissions(AuthPrincipal, Collection, int)
@@ -73,7 +73,7 @@ public interface IAuthorizationService {
     boolean hasPermission(AuthPrincipal principal, String permission);
 
     /**
-     * Проверить наличие нескольких прав у пользователя
+     * Проверяет наличие нескольких прав у пользователя
      * @see IAuthorizationService#hasPermission(AuthPrincipal, String)
      * @see IAuthorizationService#hasAnyPermissions(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyPermissions(AuthPrincipal, Collection, int)
@@ -85,7 +85,7 @@ public interface IAuthorizationService {
     boolean hasAllPermissions(AuthPrincipal principal, Collection<String> permissions);
 
     /**
-     * Проверить наличие хотя бы одного права из {@code permissions} у пользователя
+     * Проверяет наличие хотя бы одного права из {@code permissions} у пользователя
      * @see IAuthorizationService#hasPermission(AuthPrincipal, String)
      * @see IAuthorizationService#hasAllPermissions(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyPermissions(AuthPrincipal, Collection, int)
@@ -97,7 +97,7 @@ public interface IAuthorizationService {
     boolean hasAnyPermissions(AuthPrincipal principal, Collection<String> permissions);
 
     /**
-     * Проверить наличие хотя бы {@code count} прав у пользователя из
+     * Проверяет наличие хотя бы {@code count} прав у пользователя из
      * {@code permissions}
      * @see IAuthorizationService#hasPermission(AuthPrincipal, String)
      * @see IAuthorizationService#hasAllPermissions(AuthPrincipal, Collection)

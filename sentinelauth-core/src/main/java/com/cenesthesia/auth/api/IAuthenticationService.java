@@ -14,7 +14,7 @@ import java.util.Collection;
  */
 public interface IAuthenticationService {
     /**
-     * Выполнить аутентификацию пользователя
+     * Выполняет аутентификацию пользователя
      *
      * @param credentials реквизиты пользователя
      * @return результат аутентификации
@@ -22,14 +22,14 @@ public interface IAuthenticationService {
     AuthenticationResult authenticate(Credentials credentials);
 
     /**
-     * Завершить сеанс аутентификации пользователя
+     * Завершает сеанс аутентификации пользователя
      *
      * @return true, если сеанс успешно завершен, иначе false
      */
     boolean logout();
 
     /**
-     * Завершить сеанс аутентификации пользователя по его уникальному идентификатору
+     * Завершает сеанс аутентификации пользователя по его уникальному идентификатору
      * !!(Наработка на будущее)
      *
      * @param id идентификатор сеанса
@@ -38,14 +38,14 @@ public interface IAuthenticationService {
     boolean logout(String id);
 
     /**
-     * Проверить статус аутентификации в системе
+     * Проверяет статус аутентификации в системе
      *
      * @return true, если есть аутентифицированный пользователь, иначе false
      */
     boolean verifyAuth();
 
     /**
-     * Проверить наличие роли у аутентифицированного пользователя
+     * Проверяет наличие роли у аутентифицированного пользователя
      * @see IAuthenticationService#hasAllRoles(Collection)
      * @see IAuthenticationService#hasAnyRoles(Collection)
      * @see IAuthenticationService#hasAnyRoles(Collection, int)
@@ -56,7 +56,7 @@ public interface IAuthenticationService {
     boolean hasRole(String role);
 
     /**
-     * Проверить наличие нескольких ролей у аутентифицированного пользователя
+     * Проверяет наличие нескольких ролей у аутентифицированного пользователя
      * @see IAuthenticationService#hasRole(String)
      * @see IAuthenticationService#hasAnyRoles(Collection)
      * @see IAuthenticationService#hasAnyRoles(Collection, int)
@@ -67,7 +67,7 @@ public interface IAuthenticationService {
     boolean hasAllRoles(Collection<String> roles);
 
     /**
-     * Проверить наличие хотя бы одной роли из {@code roles} у аутентифицированного пользователя
+     * Проверяет наличие хотя бы одной роли из {@code roles} у аутентифицированного пользователя
      * @see IAuthenticationService#hasRole(String)
      * @see IAuthenticationService#hasAllRoles(Collection)
      * @see IAuthenticationService#hasAnyRoles(Collection, int)
@@ -78,7 +78,7 @@ public interface IAuthenticationService {
     boolean hasAnyRoles(Collection<String> roles);
 
     /**
-     * Проверить наличие хотя бы {@code count} ролей у аутентифицированного пользователя
+     * Проверяет наличие хотя бы {@code count} ролей у аутентифицированного пользователя
      * @see IAuthenticationService#hasRole(String)
      * @see IAuthenticationService#hasAllRoles(Collection)
      * @see IAuthenticationService#hasAnyRoles(Collection)
@@ -90,7 +90,7 @@ public interface IAuthenticationService {
     boolean hasAnyRoles(Collection<String> roles, int count);
 
     /**
-     * Проверить наличие права у аутентифицированного пользователя
+     * Проверяет наличие права у аутентифицированного пользователя
      * @see IAuthenticationService#hasAllPermissions(Collection)
      * @see IAuthenticationService#hasAnyPermissions(Collection)
      * @see IAuthenticationService#hasAnyPermissions(Collection, int)
@@ -101,7 +101,7 @@ public interface IAuthenticationService {
     boolean hasPermission(String permission);
 
     /**
-     * Проверить наличие нескольких прав у аутентифицированного пользователя
+     * Проверяет наличие нескольких прав у аутентифицированного пользователя
      * @see IAuthenticationService#hasPermission(String)
      * @see IAuthenticationService#hasAnyPermissions(Collection)
      * @see IAuthenticationService#hasAnyPermissions(Collection, int)
@@ -112,7 +112,7 @@ public interface IAuthenticationService {
     boolean hasAllPermissions(Collection<String> permissions);
 
     /**
-     * Проверить наличие хотя бы одного права из {@code permissions} у аутентифицированного
+     * Проверяет наличие хотя бы одного права из {@code permissions} у аутентифицированного
      * пользователя
      * @see IAuthenticationService#hasPermission(String)
      * @see IAuthenticationService#hasAllPermissions(Collection)
@@ -124,7 +124,7 @@ public interface IAuthenticationService {
     boolean hasAnyPermissions(Collection<String> permissions);
 
     /**
-     * Проверить наличие хотя бы {@code count} прав у аутентифицированного пользователя из
+     * Проверяет наличие хотя бы {@code count} прав у аутентифицированного пользователя из
      * {@code permissions}
      * @see IAuthenticationService#hasPermission(String)
      * @see IAuthenticationService#hasAllPermissions(Collection)

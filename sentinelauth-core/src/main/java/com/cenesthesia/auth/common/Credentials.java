@@ -28,36 +28,36 @@ public class Credentials {
     }
 
     /**
-     * Возвращает значение поля {@link Credentials#userIdentifier}
+     * Возвращает идентификатор пользователя
      *
-     * @return идентификатор пользователя
+     * @return значение поля {@link Credentials#userIdentifier}
      */
     public String getUserIdentifier() {
         return userIdentifier;
     }
 
     /**
-     * Устанавливает значение для поля {@link Credentials#userIdentifier}
+     * Устанавливает новый идентификатор пользователя
      *
-     * @param userIdentifier новый идентификатор пользователя
+     * @param userIdentifier новое значение для поля {@link Credentials#userIdentifier}
      */
     public void setUserIdentifier(String userIdentifier) {
         this.userIdentifier = userIdentifier;
     }
 
     /**
-     * Возвращает значение поля {@link Credentials#password}
+     * Возвращает идентификационный ключ пользователя
      *
-     * @return идентификационный ключ пользователя
+     * @return значение поля {@link Credentials#password}
      */
     public byte[] getPassword() {
         return password;
     }
 
     /**
-     * Устанавливает значение для поля {@link Credentials#password}
+     * Устанавливает новый идентификационный ключ пользователя
      *
-     * @param password новый идентификационный ключ пользователя
+     * @param password новое значение для поля {@link Credentials#password}
      */
     public void setPassword(byte[] password) {
         this.password = password;
