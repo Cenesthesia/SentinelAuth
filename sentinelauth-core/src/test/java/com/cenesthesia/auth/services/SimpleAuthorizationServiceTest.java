@@ -425,4 +425,116 @@ public class SimpleAuthorizationServiceTest {
         boolean result = authorizationService.hasAnyPermissions(null, Set.of("read"), 1);
         assertFalse(result);
     }
+
+    //============================ hasRoleWithContext test ====================================
+
+    @Test
+    @DisplayName("hasRoleWithContext should work like hasRole and return true when user has the role")
+    void hasRoleWithContextWhenUserHasRole() {
+        principal.setRoles(Set.of("admin", "user", "guest"));
+
+        boolean result = authorizationService.hasRoleWithContext(principal, "admin", new Object());
+        assertTrue(result);
+    }
+
+    @Test
+    @DisplayName("hasRoleWithContext should work like hasRole and return false when user doesn't have the role")
+    void hasRoleWithContextWhenUserDoesNotHaveRole() {
+        principal.setRoles(Set.of("user"));
+
+        boolean result = authorizationService.hasRoleWithContext(principal, "admin", new Object());
+        assertFalse(result);
+    }
+
+    @Test
+    @DisplayName("hasRoleWithContext should work like hasRole and return false when user roles is null")
+    void hasRoleWithContextWhenUserRolesIsNull() {
+        principal.setRoles(null);
+
+        boolean result = authorizationService.hasRoleWithContext(principal, "admin", new Object());
+        assertFalse(result);
+    }
+
+    @Test
+    @DisplayName("hasRoleWithContext should work like hasRole and return false when principal or role is null")
+    void hasRoleWithContextWhenPrincipalOrRoleIsNull() {
+        boolean resultNullPrincipal = authorizationService.hasRoleWithContext(null, "admin", new Object());
+        boolean resultNullRole = authorizationService.hasRoleWithContext(principal, null, new Object());
+        assertFalse(resultNullPrincipal);
+        assertFalse(resultNullRole);
+    }
+
+    @Test
+    @DisplayName("hasRoleWithContext should work like hasRole no matter the context")
+    void hasRoleWithContextDoesNotDependOnContext() {
+        principal.setRoles(Set.of("admin", "user", "guest"));
+        boolean resultObjectContextWithCorrectRole = authorizationService.hasRoleWithContext(principal, "admin", new Object());
+        boolean resultObjectContextWithWrongRole = authorizationService.hasRoleWithContext(principal, "editor", new Object());
+        boolean resultNullContextWithCorrectRole = authorizationService.hasRoleWithContext(principal, "admin", null);
+        boolean resultNullContextWithWrongRole = authorizationService.hasRoleWithContext(principal, "editor", null);
+        boolean resultOtherContextWithCorrectRole = authorizationService.hasRoleWithContext(principal, "admin", "context");
+        boolean resultOtherContextWithWrongRole = authorizationService.hasRoleWithContext(principal, "editor", "context");
+        assertTrue(resultObjectContextWithCorrectRole);
+        assertFalse(resultObjectContextWithWrongRole);
+        assertTrue(resultNullContextWithCorrectRole);
+        assertFalse(resultNullContextWithWrongRole);
+        assertTrue(resultOtherContextWithCorrectRole);
+        assertFalse(resultOtherContextWithWrongRole);
+    }
+
+    //========================== hasPermissionWithContext test ==================================
+
+    @Test
+    @DisplayName("hasPermissionWithContext should work like hasPermission and return true when user has the permission")
+    void hasPermissionWithContextWhenUserHasPermission() {
+        principal.setPermissions(Set.of("read", "write", "delete"));
+
+        boolean result = authorizationService.hasPermissionWithContext(principal, "read", new Object());
+        assertTrue(result);
+    }
+
+    @Test
+    @DisplayName("hasPermissionWithContext should work like hasPermission and return false when user doesn't have the permission")
+    void hasPermissionWithContextWhenUserDoesNotHavePermission() {
+        principal.setPermissions(Set.of("read"));
+
+        boolean result = authorizationService.hasPermissionWithContext(principal, "write", new Object());
+        assertFalse(result);
+    }
+
+    @Test
+    @DisplayName("hasPermissionWithContext should work like hasPermission and return false when user permissions is null")
+    void hasPermissionWithContextWhenUserPermissionsIsNull() {
+        principal.setPermissions(null);
+
+        boolean result = authorizationService.hasPermissionWithContext(principal, "read", new Object());
+        assertFalse(result);
+    }
+
+    @Test
+    @DisplayName("hasPermissionWithContext should work like hasPermission and return false when principal or permission is null")
+    void hasPermissionWithContextWhenPrincipalOrPermissionIsNull() {
+        boolean resultNullPrincipal = authorizationService.hasPermissionWithContext(null, "read", new Object());
+        boolean resultNullPermission = authorizationService.hasPermissionWithContext(principal, null, new Object());
+        assertFalse(resultNullPrincipal);
+        assertFalse(resultNullPermission);
+    }
+
+    @Test
+    @DisplayName("hasPermissionWithContext should work like hasPermission no matter the context")
+    void hasPermissionWithContextDoesNotDependOnContext() {
+        principal.setPermissions(Set.of("read", "write", "execute"));
+        boolean resultObjectContextWithCorrectPermission = authorizationService.hasPermissionWithContext(principal, "read", new Object());
+        boolean resultObjectContextWithWrongPermission = authorizationService.hasPermissionWithContext(principal, "delete", new Object());
+        boolean resultNullContextWithCorrectPermission = authorizationService.hasPermissionWithContext(principal, "read", null);
+        boolean resultNullContextWithWrongPermission = authorizationService.hasPermissionWithContext(principal, "delete", null);
+        boolean resultOtherContextWithCorrectPermission = authorizationService.hasPermissionWithContext(principal, "read", "context");
+        boolean resultOtherContextWithWrongPermission = authorizationService.hasPermissionWithContext(principal, "delete", "context");
+        assertTrue(resultObjectContextWithCorrectPermission);
+        assertFalse(resultObjectContextWithWrongPermission);
+        assertTrue(resultNullContextWithCorrectPermission);
+        assertFalse(resultNullContextWithWrongPermission);
+        assertTrue(resultOtherContextWithCorrectPermission);
+        assertFalse(resultOtherContextWithWrongPermission);
+    }
 }

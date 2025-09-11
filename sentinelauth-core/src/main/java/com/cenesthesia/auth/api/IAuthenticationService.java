@@ -1,5 +1,6 @@
 package com.cenesthesia.auth.api;
 
+import com.cenesthesia.auth.common.AuthPrincipal;
 import com.cenesthesia.auth.common.Credentials;
 
 import java.util.Collection;
@@ -14,11 +15,24 @@ import java.util.Collection;
 public interface IAuthenticationService {
     /**
      * Выполняет аутентификацию пользователя
+     * @see IAuthenticationService#authenticateWithContext(AuthPrincipal, Credentials, Object)
      *
      * @param credentials реквизиты пользователя
-     * @return результат аутентификации
+     * @return true, если аутентификация успешна, иначе false
      */
     boolean authenticate(Credentials credentials);
+
+    /**
+     * Выполняет аутентификацию пользователя с учетом дополнительного контекста. Заделка для
+     * кастомных сервисов. По умолчанию функционал аналогичен {@link IAuthenticationService#authenticate(Credentials)}
+     * @see IAuthenticationService#authenticate(Credentials)
+     *
+     * @param principal информация о пользователе
+     * @param credentials реквизиты аутентификации
+     * @param context контекст
+     * @return true, если аутентификация успешна, иначе false
+     */
+    boolean authenticateWithContext(AuthPrincipal principal, Credentials credentials, Object context);
 
     /**
      * Завершает сеанс аутентификации пользователя
@@ -46,8 +60,9 @@ public interface IAuthenticationService {
     /**
      * Проверяет наличие роли у аутентифицированного пользователя
      * @see IAuthenticationService#hasAllRoles(Collection)
-     * @see IAuthenticationService#hasAnyRoles(Collection)
+     * @see IAuthenticationService#hasAnyRole(Collection)
      * @see IAuthenticationService#hasAnyRoles(Collection, int)
+     * @see IAuthenticationService#hasRoleWithContext(String, Object)
      *
      * @param role проверяемая роль
      * @return true, если у пользователя есть роль {@code role}, иначе false
@@ -57,8 +72,9 @@ public interface IAuthenticationService {
     /**
      * Проверяет наличие нескольких ролей у аутентифицированного пользователя
      * @see IAuthenticationService#hasRole(String)
-     * @see IAuthenticationService#hasAnyRoles(Collection)
+     * @see IAuthenticationService#hasAnyRole(Collection)
      * @see IAuthenticationService#hasAnyRoles(Collection, int)
+     * @see IAuthenticationService#hasRoleWithContext(String, Object)
      *
      * @param roles проверяемые роли
      * @return true, если у пользователя есть все роли из {@code roles}, иначе false
@@ -70,17 +86,19 @@ public interface IAuthenticationService {
      * @see IAuthenticationService#hasRole(String)
      * @see IAuthenticationService#hasAllRoles(Collection)
      * @see IAuthenticationService#hasAnyRoles(Collection, int)
+     * @see IAuthenticationService#hasRoleWithContext(String, Object)
      *
      * @param roles проверяемые роли
      * @return true, если у пользователя есть хотя бы одна из ролей {@code roles}, иначе false
      */
-    boolean hasAnyRoles(Collection<String> roles);
+    boolean hasAnyRole(Collection<String> roles);
 
     /**
      * Проверяет наличие хотя бы {@code count} ролей у аутентифицированного пользователя
      * @see IAuthenticationService#hasRole(String)
      * @see IAuthenticationService#hasAllRoles(Collection)
-     * @see IAuthenticationService#hasAnyRoles(Collection)
+     * @see IAuthenticationService#hasAnyRole(Collection)
+     * @see IAuthenticationService#hasRoleWithContext(String, Object)
      *
      * @param roles проверяемые роли
      * @param count количество ролей из списка, которыми должен обладать пользователь
@@ -91,8 +109,9 @@ public interface IAuthenticationService {
     /**
      * Проверяет наличие права у аутентифицированного пользователя
      * @see IAuthenticationService#hasAllPermissions(Collection)
-     * @see IAuthenticationService#hasAnyPermissions(Collection)
+     * @see IAuthenticationService#hasAnyPermission(Collection)
      * @see IAuthenticationService#hasAnyPermissions(Collection, int)
+     * @see IAuthenticationService#hasPermissionWithContext(String, Object)
      *
      * @param permission право на проверку
      * @return true, если у пользователя есть данное право, иначе false
@@ -102,8 +121,9 @@ public interface IAuthenticationService {
     /**
      * Проверяет наличие нескольких прав у аутентифицированного пользователя
      * @see IAuthenticationService#hasPermission(String)
-     * @see IAuthenticationService#hasAnyPermissions(Collection)
+     * @see IAuthenticationService#hasAnyPermission(Collection)
      * @see IAuthenticationService#hasAnyPermissions(Collection, int)
+     * @see IAuthenticationService#hasPermissionWithContext(String, Object)
      *
      * @param permissions права на проверку
      * @return true, если у пользователя есть все права из {@code permissions}, иначе false
@@ -116,22 +136,58 @@ public interface IAuthenticationService {
      * @see IAuthenticationService#hasPermission(String)
      * @see IAuthenticationService#hasAllPermissions(Collection)
      * @see IAuthenticationService#hasAnyPermissions(Collection, int)
+     * @see IAuthenticationService#hasPermissionWithContext(String, Object)
      *
      * @param permissions права на проверку
      * @return true, если у пользователя есть хотя бы одно право из {@code permissions}, иначе false
      */
-    boolean hasAnyPermissions(Collection<String> permissions);
+    boolean hasAnyPermission(Collection<String> permissions);
 
     /**
      * Проверяет наличие хотя бы {@code count} прав у аутентифицированного пользователя из
      * {@code permissions}
      * @see IAuthenticationService#hasPermission(String)
      * @see IAuthenticationService#hasAllPermissions(Collection)
-     * @see IAuthenticationService#hasAnyPermissions(Collection)
+     * @see IAuthenticationService#hasAnyPermission(Collection)
+     * @see IAuthenticationService#hasPermissionWithContext(String, Object)
      *
      * @param permissions права на проверку
      * @param count количество прав из списка, которыми должен обладать пользователь
      * @return true, если у пользователя есть хотя бы {@code count} прав из {@code permissions}
      */
     boolean hasAnyPermissions(Collection<String> permissions, int count);
+
+    /**
+     * Проверяет наличие у пользователя роли с дополнительной контекстной информацией.
+     * Заделка для кастомных авторизационных сервисов. По умолчанию функционал аналогичен
+     * {@link IAuthenticationService#hasRole(String)}
+     * @see IAuthenticationService#hasRole(String)
+     * @see IAuthenticationService#hasAllRoles(Collection)
+     * @see IAuthenticationService#hasAnyRole(Collection)
+     * @see IAuthenticationService#hasAnyRoles(Collection, int)
+     *
+     * @param role проверяемая роль
+     * @param context контекст
+     * @return true, если у пользователя есть роль {@code role} в рамках контекста, иначе false
+     */
+    default boolean hasRoleWithContext(String role, Object context) {
+        return hasRole(role);
+    }
+
+    /**
+     * Проверяет наличие права у пользователя с дополнительной контекстной информацией.
+     * Заделка для кастомных авторизационных сервисов. По умолчанию функционал аналогичен
+     * {@link IAuthenticationService#hasPermission(String)}
+     * @see IAuthenticationService#hasPermission(String)
+     * @see IAuthenticationService#hasAllPermissions(Collection)
+     * @see IAuthenticationService#hasAnyPermission(Collection)
+     * @see IAuthenticationService#hasAnyPermissions(Collection, int)
+     *
+     * @param permission право на проверку
+     * @param context контекст
+     * @return true, если у пользователя есть роль {@code role} в рамках контекста, иначе false
+     */
+    default boolean hasPermissionWithContext(String permission, Object context) {
+        return hasPermission(permission);
+    }
 }

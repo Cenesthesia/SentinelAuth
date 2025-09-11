@@ -15,7 +15,7 @@ public interface IAuthUserRepository {
      * Поиск пользователя по его наименования в системе. ! Важно: наименование
      * не гарантирует уникальность, если это не предусмотренно реализацией репозитория.
      * @see IAuthUserRepository#findById(String)
-     * @see IAuthUserRepository#findBy(Object)
+     * @see IAuthUserRepository#findByContext(Object)
      *
      * @param username наименование пользователя в системе
      * @return пользователя с наименованием {@code username}, если такой существует, иначе null.
@@ -26,7 +26,7 @@ public interface IAuthUserRepository {
     /**
      * Поиск пользователя по его уникальному идентификатору
      * @see IAuthUserRepository#findByUsername(String)
-     * @see IAuthUserRepository#findBy(Object)
+     * @see IAuthUserRepository#findByContext(Object)
      *
      * @param id уникальный идентификатор пользователя
      * @return пользователя с наименованием {@code username}, если такой существует, иначе null.
@@ -35,7 +35,8 @@ public interface IAuthUserRepository {
     Optional<AuthPrincipal> findById(String id);
 
     /**
-     * Поиск пользователя по другому {@code obj} признаку. Заделка для кастомных репозиториев.
+     * Поиск пользователя по другому признаку {@code context}. Заделка для кастомных репозиториев.
+     * По умолчанию всегда возвращает пустого пользователя.
      * @see IAuthUserRepository#findByUsername(String)
      * @see IAuthUserRepository#findById(String)
      *
@@ -43,7 +44,7 @@ public interface IAuthUserRepository {
      * @return пользователя с признаком {@code obj}, если такой существует, иначе null.
      * Возвращаемое значение обёрнуто в Optional.
      */
-    default Optional<AuthPrincipal> findBy(Object obj) {
+    default Optional<AuthPrincipal> findByContext(Object obj) {
         return Optional.empty();
     }
 }

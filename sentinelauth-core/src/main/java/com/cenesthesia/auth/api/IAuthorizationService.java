@@ -12,10 +12,11 @@ import java.util.Collection;
  */
 public interface IAuthorizationService {
     /**
-     * Проверить наличие роли у пользователя
+     * Проверяет наличие роли у пользователя
      * @see IAuthorizationService#hasAllRoles(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyRole(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyRoles(AuthPrincipal, Collection, int)
+     * @see IAuthorizationService#hasRoleWithContext(AuthPrincipal, String, Object)
      *
      * @param principal пользовательская информация
      * @param role проверяемая роль
@@ -28,6 +29,7 @@ public interface IAuthorizationService {
      * @see IAuthorizationService#hasRole(AuthPrincipal, String)
      * @see IAuthorizationService#hasAnyRole(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyRoles(AuthPrincipal, Collection, int)
+     * @see IAuthorizationService#hasRoleWithContext(AuthPrincipal, String, Object)
      *
      * @param principal пользовательская информация
      * @param roles проверяемые роли
@@ -40,6 +42,7 @@ public interface IAuthorizationService {
      * @see IAuthorizationService#hasRole(AuthPrincipal, String)
      * @see IAuthorizationService#hasAllRoles(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyRoles(AuthPrincipal, Collection, int)
+     * @see IAuthorizationService#hasRoleWithContext(AuthPrincipal, String, Object)
      *
      * @param principal пользовательская информация
      * @param roles проверяемые роли
@@ -52,6 +55,7 @@ public interface IAuthorizationService {
      * @see IAuthorizationService#hasRole(AuthPrincipal, String)
      * @see IAuthorizationService#hasAllRoles(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyRole(AuthPrincipal, Collection)
+     * @see IAuthorizationService#hasRoleWithContext(AuthPrincipal, String, Object)
      *
      * @param principal пользовательская информация
      * @param roles проверяемые роли
@@ -65,6 +69,7 @@ public interface IAuthorizationService {
      * @see IAuthorizationService#hasAllPermissions(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyPermission(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyPermissions(AuthPrincipal, Collection, int)
+     * @see IAuthorizationService#hasRoleWithContext(AuthPrincipal, String, Object)
      *
      * @param principal пользовательская информация
      * @param permission право на проверку
@@ -77,6 +82,7 @@ public interface IAuthorizationService {
      * @see IAuthorizationService#hasPermission(AuthPrincipal, String)
      * @see IAuthorizationService#hasAnyPermission(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyPermissions(AuthPrincipal, Collection, int)
+     * @see IAuthorizationService#hasPermissionWithContext(AuthPrincipal, String, Object)
      *
      * @param principal пользовательская информация
      * @param permissions права на проверку
@@ -89,6 +95,7 @@ public interface IAuthorizationService {
      * @see IAuthorizationService#hasPermission(AuthPrincipal, String)
      * @see IAuthorizationService#hasAllPermissions(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyPermissions(AuthPrincipal, Collection, int)
+     * @see IAuthorizationService#hasPermissionWithContext(AuthPrincipal, String, Object)
      *
      * @param principal пользовательская информация
      * @param permissions права на проверку
@@ -102,6 +109,7 @@ public interface IAuthorizationService {
      * @see IAuthorizationService#hasPermission(AuthPrincipal, String)
      * @see IAuthorizationService#hasAllPermissions(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyPermission(AuthPrincipal, Collection)
+     * @see IAuthorizationService#hasPermissionWithContext(AuthPrincipal, String, Object)
      *
      * @param principal пользовательская информация
      * @param permissions права на проверку
@@ -112,8 +120,12 @@ public interface IAuthorizationService {
 
     /**
      * Проверяет наличие у пользователя роли с дополнительной контекстной информацией.
-     * Заделка для кастомных авторизационных сервисов.
+     * Заделка для кастомных авторизационных сервисов. По умолчанию функционал аналогичен
+     * {@link IAuthorizationService#hasRole(AuthPrincipal, String)}
      * @see IAuthorizationService#hasRole(AuthPrincipal, String)
+     * @see IAuthorizationService#hasAllRoles(AuthPrincipal, Collection)
+     * @see IAuthorizationService#hasAnyRole(AuthPrincipal, Collection)
+     * @see IAuthorizationService#hasAnyRoles(AuthPrincipal, Collection, int)
      *
      * @param principal пользовательская информация
      * @param role проверяемая роль
@@ -126,8 +138,12 @@ public interface IAuthorizationService {
 
     /**
      * Проверяет наличие права у пользователя с дополнительной контекстной информацией.
-     * Заделка для кастомных авторизационных сервисов.
+     * Заделка для кастомных авторизационных сервисов. По умолчанию функционал аналогичен
+     * {@link IAuthorizationService#hasPermission(AuthPrincipal, String)}
      * @see IAuthorizationService#hasPermission(AuthPrincipal, String)
+     * @see IAuthorizationService#hasAllPermissions(AuthPrincipal, Collection)
+     * @see IAuthorizationService#hasAnyPermission(AuthPrincipal, Collection)
+     * @see IAuthorizationService#hasAnyPermissions(AuthPrincipal, Collection, int)
      *
      * @param principal пользовательская информация
      * @param permission право на проверку
