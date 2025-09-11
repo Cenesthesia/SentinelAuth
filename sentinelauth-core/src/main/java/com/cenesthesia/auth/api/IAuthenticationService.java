@@ -1,7 +1,6 @@
 package com.cenesthesia.auth.api;
 
 import com.cenesthesia.auth.common.Credentials;
-import com.cenesthesia.auth.core.AuthenticationResult;
 
 import java.util.Collection;
 
@@ -19,7 +18,7 @@ public interface IAuthenticationService {
      * @param credentials реквизиты пользователя
      * @return результат аутентификации
      */
-    AuthenticationResult authenticate(Credentials credentials);
+    boolean authenticate(Credentials credentials);
 
     /**
      * Завершает сеанс аутентификации пользователя

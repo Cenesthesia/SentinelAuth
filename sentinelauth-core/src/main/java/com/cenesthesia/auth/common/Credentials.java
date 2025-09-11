@@ -13,7 +13,7 @@ public class Credentials {
     /**Идентификатор пользователя*/
     private String userIdentifier;
     /**Идентификационный ключ пользователя*/
-    private byte[] password;
+    private char[] password;
 
     /**
      * Конструктор - инициализирует реквизиты пользователя
@@ -22,7 +22,7 @@ public class Credentials {
      * @param userIdentifier идентификатор пользователя
      * @param password идентификационный ключ пользователя
      */
-    public Credentials(String userIdentifier, byte[] password) {
+    public Credentials(String userIdentifier, char[] password) {
         this.userIdentifier = userIdentifier;
         this.password = password;
     }
@@ -50,7 +50,7 @@ public class Credentials {
      *
      * @return значение поля {@link Credentials#password}
      */
-    public byte[] getPassword() {
+    public char[] getPassword() {
         return password;
     }
 
@@ -59,7 +59,7 @@ public class Credentials {
      *
      * @param password новое значение для поля {@link Credentials#password}
      */
-    public void setPassword(byte[] password) {
+    public void setPassword(char[] password) {
         this.password = password;
     }
 
