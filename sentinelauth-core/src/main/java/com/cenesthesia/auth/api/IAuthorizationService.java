@@ -14,7 +14,7 @@ public interface IAuthorizationService {
     /**
      * Проверить наличие роли у пользователя
      * @see IAuthorizationService#hasAllRoles(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasAnyRoles(AuthPrincipal, Collection)
+     * @see IAuthorizationService#hasAnyRole(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyRoles(AuthPrincipal, Collection, int)
      *
      * @param principal пользовательская информация
@@ -26,7 +26,7 @@ public interface IAuthorizationService {
     /**
      * Проверяет наличие нескольких ролей у пользователя
      * @see IAuthorizationService#hasRole(AuthPrincipal, String)
-     * @see IAuthorizationService#hasAnyRoles(AuthPrincipal, Collection)
+     * @see IAuthorizationService#hasAnyRole(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyRoles(AuthPrincipal, Collection, int)
      *
      * @param principal пользовательская информация
@@ -45,13 +45,13 @@ public interface IAuthorizationService {
      * @param roles проверяемые роли
      * @return true, если у пользователя есть хотя бы одна из ролей {@code roles}, иначе false
      */
-    boolean hasAnyRoles(AuthPrincipal principal, Collection<String> roles);
+    boolean hasAnyRole(AuthPrincipal principal, Collection<String> roles);
 
     /**
      * Проверяет наличие хотя бы {@code count} ролей у пользователя
      * @see IAuthorizationService#hasRole(AuthPrincipal, String)
      * @see IAuthorizationService#hasAllRoles(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasAnyRoles(AuthPrincipal, Collection)
+     * @see IAuthorizationService#hasAnyRole(AuthPrincipal, Collection)
      *
      * @param principal пользовательская информация
      * @param roles проверяемые роли
@@ -63,7 +63,7 @@ public interface IAuthorizationService {
     /**
      * Проверяет наличие права у пользователя
      * @see IAuthorizationService#hasAllPermissions(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasAnyPermissions(AuthPrincipal, Collection)
+     * @see IAuthorizationService#hasAnyPermission(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyPermissions(AuthPrincipal, Collection, int)
      *
      * @param principal пользовательская информация
@@ -75,7 +75,7 @@ public interface IAuthorizationService {
     /**
      * Проверяет наличие нескольких прав у пользователя
      * @see IAuthorizationService#hasPermission(AuthPrincipal, String)
-     * @see IAuthorizationService#hasAnyPermissions(AuthPrincipal, Collection)
+     * @see IAuthorizationService#hasAnyPermission(AuthPrincipal, Collection)
      * @see IAuthorizationService#hasAnyPermissions(AuthPrincipal, Collection, int)
      *
      * @param principal пользовательская информация
@@ -94,14 +94,14 @@ public interface IAuthorizationService {
      * @param permissions права на проверку
      * @return true, если у пользователя есть хотя бы одно право из {@code permissions}, иначе false
      */
-    boolean hasAnyPermissions(AuthPrincipal principal, Collection<String> permissions);
+    boolean hasAnyPermission(AuthPrincipal principal, Collection<String> permissions);
 
     /**
      * Проверяет наличие хотя бы {@code count} прав у пользователя из
      * {@code permissions}
      * @see IAuthorizationService#hasPermission(AuthPrincipal, String)
      * @see IAuthorizationService#hasAllPermissions(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasAnyPermissions(AuthPrincipal, Collection)
+     * @see IAuthorizationService#hasAnyPermission(AuthPrincipal, Collection)
      *
      * @param principal пользовательская информация
      * @param permissions права на проверку

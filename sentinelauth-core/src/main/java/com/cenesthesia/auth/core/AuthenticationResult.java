@@ -1,7 +1,6 @@
 package com.cenesthesia.auth.core;
 
 import com.cenesthesia.auth.common.AuthPrincipal;
-import com.cenesthesia.auth.common.Credentials;
 
 /**
  * Результат попытки аутентификации пользователя в системе
