@@ -1,8 +1,8 @@
 package com.cenesthesia.auth.services;
 
-import com.cenesthesia.auth.api.IAuthorizationService;
+import com.cenesthesia.auth.api.IAuthorizationProcessor;
 import com.cenesthesia.auth.common.AuthPrincipal;
-import com.cenesthesia.auth.core.SimpleAuthorizationService;
+import com.cenesthesia.auth.core.SimpleAuthorizationProcessor;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,12 +13,12 @@ import java.util.Set;
 
 @Tag("unit")
 public class SimpleAuthorizationServiceTest {
-    private IAuthorizationService authorizationService;
+    private IAuthorizationProcessor authorizationService;
     private AuthPrincipal principal;
 
     @BeforeEach
     void setUp() {
-        authorizationService = new SimpleAuthorizationService();
+        authorizationService = new SimpleAuthorizationProcessor();
         principal = new AuthPrincipal("1", "testUser");
     }
 

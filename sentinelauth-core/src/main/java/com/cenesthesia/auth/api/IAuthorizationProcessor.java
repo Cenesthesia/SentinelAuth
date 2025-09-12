@@ -10,13 +10,13 @@ import java.util.Collection;
  * @author Cenesthesia
  * @version 1.0
  */
-public interface IAuthorizationService {
+public interface IAuthorizationProcessor {
     /**
      * Проверяет наличие роли у пользователя
-     * @see IAuthorizationService#hasAllRoles(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasAnyRole(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasAnyRoles(AuthPrincipal, Collection, int)
-     * @see IAuthorizationService#hasRoleWithContext(AuthPrincipal, String, Object)
+     * @see IAuthorizationProcessor#hasAllRoles(AuthPrincipal, Collection)
+     * @see IAuthorizationProcessor#hasAnyRole(AuthPrincipal, Collection)
+     * @see IAuthorizationProcessor#hasAnyRoles(AuthPrincipal, Collection, int)
+     * @see IAuthorizationProcessor#hasRoleWithContext(AuthPrincipal, String, Object)
      *
      * @param principal пользовательская информация
      * @param role проверяемая роль
@@ -26,10 +26,10 @@ public interface IAuthorizationService {
 
     /**
      * Проверяет наличие нескольких ролей у пользователя
-     * @see IAuthorizationService#hasRole(AuthPrincipal, String)
-     * @see IAuthorizationService#hasAnyRole(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasAnyRoles(AuthPrincipal, Collection, int)
-     * @see IAuthorizationService#hasRoleWithContext(AuthPrincipal, String, Object)
+     * @see IAuthorizationProcessor#hasRole(AuthPrincipal, String)
+     * @see IAuthorizationProcessor#hasAnyRole(AuthPrincipal, Collection)
+     * @see IAuthorizationProcessor#hasAnyRoles(AuthPrincipal, Collection, int)
+     * @see IAuthorizationProcessor#hasRoleWithContext(AuthPrincipal, String, Object)
      *
      * @param principal пользовательская информация
      * @param roles проверяемые роли
@@ -39,10 +39,10 @@ public interface IAuthorizationService {
 
     /**
      * Проверяет наличие хотя бы одной роли из {@code roles} у пользователя
-     * @see IAuthorizationService#hasRole(AuthPrincipal, String)
-     * @see IAuthorizationService#hasAllRoles(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasAnyRoles(AuthPrincipal, Collection, int)
-     * @see IAuthorizationService#hasRoleWithContext(AuthPrincipal, String, Object)
+     * @see IAuthorizationProcessor#hasRole(AuthPrincipal, String)
+     * @see IAuthorizationProcessor#hasAllRoles(AuthPrincipal, Collection)
+     * @see IAuthorizationProcessor#hasAnyRoles(AuthPrincipal, Collection, int)
+     * @see IAuthorizationProcessor#hasRoleWithContext(AuthPrincipal, String, Object)
      *
      * @param principal пользовательская информация
      * @param roles проверяемые роли
@@ -52,10 +52,10 @@ public interface IAuthorizationService {
 
     /**
      * Проверяет наличие хотя бы {@code count} ролей у пользователя
-     * @see IAuthorizationService#hasRole(AuthPrincipal, String)
-     * @see IAuthorizationService#hasAllRoles(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasAnyRole(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasRoleWithContext(AuthPrincipal, String, Object)
+     * @see IAuthorizationProcessor#hasRole(AuthPrincipal, String)
+     * @see IAuthorizationProcessor#hasAllRoles(AuthPrincipal, Collection)
+     * @see IAuthorizationProcessor#hasAnyRole(AuthPrincipal, Collection)
+     * @see IAuthorizationProcessor#hasRoleWithContext(AuthPrincipal, String, Object)
      *
      * @param principal пользовательская информация
      * @param roles проверяемые роли
@@ -66,10 +66,10 @@ public interface IAuthorizationService {
 
     /**
      * Проверяет наличие права у пользователя
-     * @see IAuthorizationService#hasAllPermissions(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasAnyPermission(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasAnyPermissions(AuthPrincipal, Collection, int)
-     * @see IAuthorizationService#hasRoleWithContext(AuthPrincipal, String, Object)
+     * @see IAuthorizationProcessor#hasAllPermissions(AuthPrincipal, Collection)
+     * @see IAuthorizationProcessor#hasAnyPermission(AuthPrincipal, Collection)
+     * @see IAuthorizationProcessor#hasAnyPermissions(AuthPrincipal, Collection, int)
+     * @see IAuthorizationProcessor#hasRoleWithContext(AuthPrincipal, String, Object)
      *
      * @param principal пользовательская информация
      * @param permission право на проверку
@@ -79,10 +79,10 @@ public interface IAuthorizationService {
 
     /**
      * Проверяет наличие нескольких прав у пользователя
-     * @see IAuthorizationService#hasPermission(AuthPrincipal, String)
-     * @see IAuthorizationService#hasAnyPermission(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasAnyPermissions(AuthPrincipal, Collection, int)
-     * @see IAuthorizationService#hasPermissionWithContext(AuthPrincipal, String, Object)
+     * @see IAuthorizationProcessor#hasPermission(AuthPrincipal, String)
+     * @see IAuthorizationProcessor#hasAnyPermission(AuthPrincipal, Collection)
+     * @see IAuthorizationProcessor#hasAnyPermissions(AuthPrincipal, Collection, int)
+     * @see IAuthorizationProcessor#hasPermissionWithContext(AuthPrincipal, String, Object)
      *
      * @param principal пользовательская информация
      * @param permissions права на проверку
@@ -92,10 +92,10 @@ public interface IAuthorizationService {
 
     /**
      * Проверяет наличие хотя бы одного права из {@code permissions} у пользователя
-     * @see IAuthorizationService#hasPermission(AuthPrincipal, String)
-     * @see IAuthorizationService#hasAllPermissions(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasAnyPermissions(AuthPrincipal, Collection, int)
-     * @see IAuthorizationService#hasPermissionWithContext(AuthPrincipal, String, Object)
+     * @see IAuthorizationProcessor#hasPermission(AuthPrincipal, String)
+     * @see IAuthorizationProcessor#hasAllPermissions(AuthPrincipal, Collection)
+     * @see IAuthorizationProcessor#hasAnyPermissions(AuthPrincipal, Collection, int)
+     * @see IAuthorizationProcessor#hasPermissionWithContext(AuthPrincipal, String, Object)
      *
      * @param principal пользовательская информация
      * @param permissions права на проверку
@@ -106,10 +106,10 @@ public interface IAuthorizationService {
     /**
      * Проверяет наличие хотя бы {@code count} прав у пользователя из
      * {@code permissions}
-     * @see IAuthorizationService#hasPermission(AuthPrincipal, String)
-     * @see IAuthorizationService#hasAllPermissions(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasAnyPermission(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasPermissionWithContext(AuthPrincipal, String, Object)
+     * @see IAuthorizationProcessor#hasPermission(AuthPrincipal, String)
+     * @see IAuthorizationProcessor#hasAllPermissions(AuthPrincipal, Collection)
+     * @see IAuthorizationProcessor#hasAnyPermission(AuthPrincipal, Collection)
+     * @see IAuthorizationProcessor#hasPermissionWithContext(AuthPrincipal, String, Object)
      *
      * @param principal пользовательская информация
      * @param permissions права на проверку
@@ -121,11 +121,11 @@ public interface IAuthorizationService {
     /**
      * Проверяет наличие у пользователя роли с дополнительной контекстной информацией.
      * Заделка для кастомных авторизационных сервисов. По умолчанию функционал аналогичен
-     * {@link IAuthorizationService#hasRole(AuthPrincipal, String)}
-     * @see IAuthorizationService#hasRole(AuthPrincipal, String)
-     * @see IAuthorizationService#hasAllRoles(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasAnyRole(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasAnyRoles(AuthPrincipal, Collection, int)
+     * {@link IAuthorizationProcessor#hasRole(AuthPrincipal, String)}
+     * @see IAuthorizationProcessor#hasRole(AuthPrincipal, String)
+     * @see IAuthorizationProcessor#hasAllRoles(AuthPrincipal, Collection)
+     * @see IAuthorizationProcessor#hasAnyRole(AuthPrincipal, Collection)
+     * @see IAuthorizationProcessor#hasAnyRoles(AuthPrincipal, Collection, int)
      *
      * @param principal пользовательская информация
      * @param role проверяемая роль
@@ -139,11 +139,11 @@ public interface IAuthorizationService {
     /**
      * Проверяет наличие права у пользователя с дополнительной контекстной информацией.
      * Заделка для кастомных авторизационных сервисов. По умолчанию функционал аналогичен
-     * {@link IAuthorizationService#hasPermission(AuthPrincipal, String)}
-     * @see IAuthorizationService#hasPermission(AuthPrincipal, String)
-     * @see IAuthorizationService#hasAllPermissions(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasAnyPermission(AuthPrincipal, Collection)
-     * @see IAuthorizationService#hasAnyPermissions(AuthPrincipal, Collection, int)
+     * {@link IAuthorizationProcessor#hasPermission(AuthPrincipal, String)}
+     * @see IAuthorizationProcessor#hasPermission(AuthPrincipal, String)
+     * @see IAuthorizationProcessor#hasAllPermissions(AuthPrincipal, Collection)
+     * @see IAuthorizationProcessor#hasAnyPermission(AuthPrincipal, Collection)
+     * @see IAuthorizationProcessor#hasAnyPermissions(AuthPrincipal, Collection, int)
      *
      * @param principal пользовательская информация
      * @param permission право на проверку

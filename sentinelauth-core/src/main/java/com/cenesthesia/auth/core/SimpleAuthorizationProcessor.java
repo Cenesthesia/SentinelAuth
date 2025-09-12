@@ -1,6 +1,6 @@
 package com.cenesthesia.auth.core;
 
-import com.cenesthesia.auth.api.IAuthorizationService;
+import com.cenesthesia.auth.api.IAuthorizationProcessor;
 import com.cenesthesia.auth.common.AuthPrincipal;
 
 import java.util.Collection;
@@ -14,7 +14,7 @@ import java.util.Collection;
  * @author Cenesthesia
  * @version 1.0
  */
-public class SimpleAuthorizationService implements IAuthorizationService {
+public class SimpleAuthorizationProcessor implements IAuthorizationProcessor {
     @Override
     public boolean hasRole(AuthPrincipal principal, String role) {
         if (principal == null || principal.getRoles() == null || role == null)
