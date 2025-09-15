@@ -1,5 +1,7 @@
 package com.cenesthesia.auth.common;
 
+import com.cenesthesia.auth.utils.PasswordSecurityUtils;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -14,9 +16,9 @@ import java.util.Set;
  */
 public class AuthPrincipal {
     /**Уникальный идентификатор пользователя в системе (Зачастую аналогичен {@code username})*/
-    private String id;
+    private char[] id;
     /**Наименование пользователя в системе*/
-    private String username;
+    private char[] username;
     /**Хэш пароля*/
     private byte[] passwordHash;
     /**Соль*/
@@ -30,10 +32,30 @@ public class AuthPrincipal {
      * Минимальный конструктор для инициализации единого идентификатора пользователя
      * @see AuthPrincipal#AuthPrincipal(String, String)
      * @see AuthPrincipal#AuthPrincipal(String, String, byte[], byte[])
+     * @see AuthPrincipal#AuthPrincipal(char[])
+     * @see AuthPrincipal#AuthPrincipal(char[], char[])
+     * @see AuthPrincipal#AuthPrincipal(char[], char[], byte[], byte[])
      *
      * @param indf однозначный идентификатор пользователя
      */
     public AuthPrincipal(String indf) {
+        this.id = indf.toCharArray();
+        this.username = indf.toCharArray();
+        this.passwordHash = new byte[0];
+        this.salt = new byte[0];
+    }
+
+    /**
+     * Минимальный конструктор для инициализации единого идентификатора пользователя
+     * @see AuthPrincipal#AuthPrincipal(String)
+     * @see AuthPrincipal#AuthPrincipal(String, String)
+     * @see AuthPrincipal#AuthPrincipal(String, String, byte[], byte[])
+     * @see AuthPrincipal#AuthPrincipal(char[], char[])
+     * @see AuthPrincipal#AuthPrincipal(char[], char[], byte[], byte[])
+     *
+     * @param indf однозначный идентификатор пользователя
+     */
+    public AuthPrincipal(char[] indf) {
         this.id = indf;
         this.username = indf;
         this.passwordHash = new byte[0];
@@ -43,12 +65,33 @@ public class AuthPrincipal {
     /**
      * Конструктор для инициализации идентификатора пользователя
      * @see AuthPrincipal#AuthPrincipal(String)
-      *@see AuthPrincipal#AuthPrincipal(String, String, byte[], byte[])
+     * @see AuthPrincipal#AuthPrincipal(String, String, byte[], byte[])
+     * @see AuthPrincipal#AuthPrincipal(char[])
+     * @see AuthPrincipal#AuthPrincipal(char[], char[])
+     * @see AuthPrincipal#AuthPrincipal(char[], char[], byte[], byte[])
      *
      * @param id уникальный идентификатор пользователя
      * @param username наименование пользователя
      */
     public AuthPrincipal(String id, String username) {
+        this.id = id.toCharArray();
+        this.username = username.toCharArray();
+        this.passwordHash = new byte[0];
+        this.salt = new byte[0];
+    }
+
+    /**
+     * Конструктор для инициализации идентификатора пользователя
+     * @see AuthPrincipal#AuthPrincipal(String)
+     * @see AuthPrincipal#AuthPrincipal(String, String)
+     * @see AuthPrincipal#AuthPrincipal(String, String, byte[], byte[])
+     * @see AuthPrincipal#AuthPrincipal(char[])
+     * @see AuthPrincipal#AuthPrincipal(char[], char[], byte[], byte[])
+     *
+     * @param id уникальный идентификатор пользователя
+     * @param username наименование пользователя
+     */
+    public AuthPrincipal(char[] id, char[] username) {
         this.id = id;
         this.username = username;
         this.passwordHash = new byte[0];
@@ -59,6 +102,9 @@ public class AuthPrincipal {
      * Конструктор для инициализации идентификатора и пароля пользователя
      * @see AuthPrincipal#AuthPrincipal(String)
      * @see AuthPrincipal#AuthPrincipal(String, String)
+     * @see AuthPrincipal#AuthPrincipal(char[])
+     * @see AuthPrincipal#AuthPrincipal(char[], char[])
+     * @see AuthPrincipal#AuthPrincipal(char[], char[], byte[], byte[])
      *
      * @param id уникальный идентификатор пользователя
      * @param username наименование пользователя
@@ -66,6 +112,26 @@ public class AuthPrincipal {
      * @param salt соль
      */
     public AuthPrincipal(String id, String username, byte[] passwordHash, byte[] salt) {
+        this.id = id.toCharArray();
+        this.username = username.toCharArray();
+        this.passwordHash = passwordHash;
+        this.salt = salt;
+    }
+
+    /**
+     * Конструктор для инициализации идентификатора и пароля пользователя
+     * @see AuthPrincipal#AuthPrincipal(String)
+     * @see AuthPrincipal#AuthPrincipal(String, String)
+     * @see AuthPrincipal#AuthPrincipal(String, String, byte[], byte[])
+     * @see AuthPrincipal#AuthPrincipal(char[])
+     * @see AuthPrincipal#AuthPrincipal(char[], char[])
+     *
+     * @param id уникальный идентификатор пользователя
+     * @param username наименование пользователя
+     * @param passwordHash пароль
+     * @param salt соль
+     */
+    public AuthPrincipal(char[] id, char[] username, byte[] passwordHash, byte[] salt) {
         this.id = id;
         this.username = username;
         this.passwordHash = passwordHash;
@@ -77,16 +143,18 @@ public class AuthPrincipal {
      *
      * @return значение поля {@link AuthPrincipal#id}
      */
-    public String getId() {
+    public char[] getId() {
         return id;
     }
 
     /**
-     * Устанавливает новый уникальный идентификатор пользователя
+     * Устанавливает новый уникальный идентификатор пользователя.
+     * В качестве меры безопасности предыдущее значение будет затерто.
      *
      * @param id новое значение для поля {@link AuthPrincipal#id}
      */
-    public void setId(String id) {
+    public void setId(char[] id) {
+        PasswordSecurityUtils.clearChars(this.id);
         this.id = id;
     }
 
@@ -95,16 +163,18 @@ public class AuthPrincipal {
      *
      * @return значение поля {@link AuthPrincipal#username}
      */
-    public String getUsername() {
+    public char[] getUsername() {
         return username;
     }
 
     /**
-     * Устанавливает новое наименование пользователя в системе
+     * Устанавливает новое наименование пользователя в системе.
+     * В качестве меры безопасности предыдущее значение будет затерто.
      *
      * @param username новое значение для поля {@link AuthPrincipal#username}
      */
-    public void setUsername(String username) {
+    public void setUsername(char[] username) {
+        PasswordSecurityUtils.clearChars(this.username);
         this.username = username;
     }
 
@@ -118,11 +188,13 @@ public class AuthPrincipal {
     }
 
     /**
-     * Устанавливает новый пароль
+     * Устанавливает новый пароль.
+     * В качестве меры безопасности предыдущее значение будет затерто.
      *
      * @param passwordHash новое значение для поля {@link AuthPrincipal#passwordHash}
      */
     public void setPasswordHash(byte[] passwordHash) {
+        PasswordSecurityUtils.clearBytes(this.passwordHash);
         this.passwordHash = passwordHash;
     }
 
@@ -136,11 +208,13 @@ public class AuthPrincipal {
     }
 
     /**
-     * Устанавливает новая соль
+     * Устанавливает новую соль.
+     * В качестве меры безопасности предыдущее значение будет затерто.
      *
      * @param salt значение для поля {@link AuthPrincipal#salt}
      */
     public void setSalt(byte[] salt) {
+        PasswordSecurityUtils.clearBytes(this.salt);
         this.salt = salt;
     }
 
@@ -154,11 +228,13 @@ public class AuthPrincipal {
     }
 
     /**
-     * Устанавливает новое множество ролей пользователя в системе
+     * Устанавливает новое множество ролей пользователя в системе.
+     * В качестве меры безопасности предыдущее значение будет затерто.
      *
      * @param roles новое значение для поля {@link AuthPrincipal#roles}
      */
     public void setRoles(Set<String> roles) {
+        clearRoles();
         this.roles = roles;
     }
 
@@ -172,11 +248,13 @@ public class AuthPrincipal {
     }
 
     /**
-     * Устанавливает новое множество прав пользователя в системе
+     * Устанавливает новое множество прав пользователя в системе.
+     * В качестве меры безопасности предыдущее значение будет затерто.
      *
      * @param permissions новое значение для поля {@link AuthPrincipal#permissions}
      */
     public void setPermissions(Set<String> permissions) {
+        clearPermission();
         this.permissions = permissions;
     }
 
@@ -271,6 +349,6 @@ public class AuthPrincipal {
      * Очищает все права пользователя в системе
      */
     public void clearPermission() {
-        this.roles.clear();
+        this.permissions.clear();
     }
 }

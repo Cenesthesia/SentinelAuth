@@ -23,7 +23,7 @@ public class SimpleAuthenticationProcessorTest {
     @BeforeEach
     void setUp() {
         auth = new SimpleAuthenticationProcessor();
-        principal = new AuthPrincipal("1", "testUser");
+        principal = new AuthPrincipal("1".toCharArray(), "testUser".toCharArray());
     }
 
     //===================================== authenticate tests =========================================================
@@ -35,7 +35,7 @@ public class SimpleAuthenticationProcessorTest {
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("testUser", password);;
+        Credentials credentials = new Credentials("testUser".toCharArray(), password);;
         boolean result = auth.authenticate(principal, credentials);
         assertTrue(result);
     }
@@ -47,7 +47,7 @@ public class SimpleAuthenticationProcessorTest {
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(password, salt));
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("testUser", "otherPassword".toCharArray());;
+        Credentials credentials = new Credentials("testUser".toCharArray(), "otherPassword".toCharArray());;
         boolean result = auth.authenticate(principal, credentials);
         assertFalse(result);
     }
@@ -59,7 +59,7 @@ public class SimpleAuthenticationProcessorTest {
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("otherUser", password);;
+        Credentials credentials = new Credentials("otherUser".toCharArray(), password);;
         boolean result = auth.authenticate(principal, credentials);
         assertFalse(result);
     }
@@ -71,7 +71,7 @@ public class SimpleAuthenticationProcessorTest {
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(null);
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("testUser", password);
+        Credentials credentials = new Credentials("testUser".toCharArray(), password);
         boolean result = auth.authenticate(principal, credentials);
         assertFalse(result);
     }
@@ -83,7 +83,7 @@ public class SimpleAuthenticationProcessorTest {
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(new byte[0]);
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("testUser", password);
+        Credentials credentials = new Credentials("testUser".toCharArray(), password);
         boolean result = auth.authenticate(principal, credentials);
         assertFalse(result);
     }
@@ -95,7 +95,7 @@ public class SimpleAuthenticationProcessorTest {
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(null);
-        Credentials credentials = new Credentials("testUser", password);
+        Credentials credentials = new Credentials("testUser".toCharArray(), password);
         boolean result = auth.authenticate(principal, credentials);
         assertFalse(result);
     }
@@ -107,7 +107,7 @@ public class SimpleAuthenticationProcessorTest {
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(new byte[0]);
-        Credentials credentials = new Credentials("testUser", password);
+        Credentials credentials = new Credentials("testUser".toCharArray(), password);
         boolean result = auth.authenticate(principal, credentials);
         assertFalse(result);
     }
@@ -120,7 +120,7 @@ public class SimpleAuthenticationProcessorTest {
         principal.setUsername(null);
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("testUser", password);
+        Credentials credentials = new Credentials("testUser".toCharArray(), password);
         boolean result = auth.authenticate(principal, credentials);
         assertFalse(result);
     }
@@ -132,7 +132,7 @@ public class SimpleAuthenticationProcessorTest {
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("testUser", null);
+        Credentials credentials = new Credentials("testUser".toCharArray(), null);
         boolean result = auth.authenticate(principal, credentials);
         assertFalse(result);
     }
@@ -144,7 +144,7 @@ public class SimpleAuthenticationProcessorTest {
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("testUser", new char[0]);
+        Credentials credentials = new Credentials("testUser".toCharArray(), new char[0]);
         boolean result = auth.authenticate(principal, credentials);
         assertFalse(result);
     }
@@ -165,7 +165,7 @@ public class SimpleAuthenticationProcessorTest {
     @DisplayName("authenticate should return false when principal is null")
     void authenticateWhenPrincipalIsNull() {
         char[] password = "testPassword".toCharArray();
-        Credentials credentials = new Credentials("testUser", password);
+        Credentials credentials = new Credentials("testUser".toCharArray(), password);
         boolean result = auth.authenticate(null, credentials);
         assertFalse(result);
     }
@@ -191,7 +191,7 @@ public class SimpleAuthenticationProcessorTest {
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("testUser", password);;
+        Credentials credentials = new Credentials("testUser".toCharArray(), password);;
         boolean result = auth.authenticateWithContext(principal, credentials, new Object());
         assertTrue(result);
     }
@@ -204,7 +204,7 @@ public class SimpleAuthenticationProcessorTest {
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(password, salt));
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("testUser", "otherPassword".toCharArray());;
+        Credentials credentials = new Credentials("testUser".toCharArray(), "otherPassword".toCharArray());;
         boolean result = auth.authenticateWithContext(principal, credentials, new Object());
         assertFalse(result);
     }
@@ -217,7 +217,7 @@ public class SimpleAuthenticationProcessorTest {
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("otherUser", password);;
+        Credentials credentials = new Credentials("otherUser".toCharArray(), password);;
         boolean result = auth.authenticateWithContext(principal, credentials, new Object());
         assertFalse(result);
     }
@@ -229,7 +229,7 @@ public class SimpleAuthenticationProcessorTest {
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(null);
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("testUser", password);
+        Credentials credentials = new Credentials("testUser".toCharArray(), password);
         boolean result = auth.authenticateWithContext(principal, credentials, new Object());
         assertFalse(result);
     }
@@ -241,7 +241,7 @@ public class SimpleAuthenticationProcessorTest {
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(new byte[0]);
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("testUser", password);
+        Credentials credentials = new Credentials("testUser".toCharArray(), password);
         boolean result = auth.authenticateWithContext(principal, credentials, new Object());
         assertFalse(result);
     }
@@ -253,7 +253,7 @@ public class SimpleAuthenticationProcessorTest {
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(null);
-        Credentials credentials = new Credentials("testUser", password);
+        Credentials credentials = new Credentials("testUser".toCharArray(), password);
         boolean result = auth.authenticateWithContext(principal, credentials, new Object());
         assertFalse(result);
     }
@@ -265,7 +265,7 @@ public class SimpleAuthenticationProcessorTest {
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(new byte[0]);
-        Credentials credentials = new Credentials("testUser", password);
+        Credentials credentials = new Credentials("testUser".toCharArray(), password);
         boolean result = auth.authenticateWithContext(principal, credentials, new Object());
         assertFalse(result);
     }
@@ -278,7 +278,7 @@ public class SimpleAuthenticationProcessorTest {
         principal.setUsername(null);
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("testUser", password);
+        Credentials credentials = new Credentials("testUser".toCharArray(), password);
         boolean result = auth.authenticateWithContext(principal, credentials, new Object());
         assertFalse(result);
     }
@@ -290,7 +290,7 @@ public class SimpleAuthenticationProcessorTest {
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("testUser", null);
+        Credentials credentials = new Credentials("testUser".toCharArray(), null);
         boolean result = auth.authenticateWithContext(principal, credentials, new Object());
         assertFalse(result);
     }
@@ -302,7 +302,7 @@ public class SimpleAuthenticationProcessorTest {
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("testUser", new char[0]);
+        Credentials credentials = new Credentials("testUser".toCharArray(), new char[0]);
         boolean result = auth.authenticateWithContext(principal, credentials, new Object());
         assertFalse(result);
     }
@@ -323,7 +323,7 @@ public class SimpleAuthenticationProcessorTest {
     @DisplayName("authenticateWithContext should work like authenticate and return false when principal is null")
     void authenticateWithContextWhenPrincipalIsNull() {
         char[] password = "testPassword".toCharArray();
-        Credentials credentials = new Credentials("testUser", password);
+        Credentials credentials = new Credentials("testUser".toCharArray(), password);
         boolean result = auth.authenticateWithContext(null, credentials, new Object());
         assertFalse(result);
     }
@@ -342,7 +342,7 @@ public class SimpleAuthenticationProcessorTest {
     @Test
     @DisplayName("authenticateWithContext should work like authenticate no matter the context")
     void authenticateWithContextDoesNotDependOnContext() {
-        String username = "testUser";
+        char[] username = "testUser".toCharArray();
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));

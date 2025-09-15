@@ -20,6 +20,6 @@ public class ConsoleCredentialsProvider implements ICredentialsProvider {
         System.out.print("Password: ");
         String password = scanner.nextLine();
 
-        return new Credentials(username, password.toCharArray());
+        return new Credentials(username.toCharArray(), password.toCharArray());
     }
 }

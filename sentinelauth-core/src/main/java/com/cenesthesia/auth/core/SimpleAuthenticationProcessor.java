@@ -5,7 +5,7 @@ import com.cenesthesia.auth.common.AuthPrincipal;
 import com.cenesthesia.auth.common.Credentials;
 import com.cenesthesia.auth.utils.PasswordSecurityUtils;
 
-//TODO: Проверка на пустые username?
+import java.util.Arrays;
 
 /**
  * Базовый сервис аутентификации, проверяющий совпадение паролей на основе алгоритма PBKDF2
@@ -17,9 +17,10 @@ public class SimpleAuthenticationProcessor implements IAuthenticationProcessor {
     @Override
     public boolean authenticate(AuthPrincipal principal, Credentials credentials) {
         return principal != null && credentials != null && principal.getUsername() != null && credentials.getUserIdentifier() != null
+                && principal.getUsername().length > 0 && credentials.getUserIdentifier().length > 0
                 && principal.getPasswordHash() != null && credentials.getPassword() != null && principal.getSalt() != null
                 && principal.getPasswordHash().length > 0 && credentials.getPassword().length > 0 && principal.getSalt().length > 0
-                && credentials.getUserIdentifier().equals(principal.getUsername())
+                && Arrays.equals(credentials.getUserIdentifier(), principal.getUsername())
                 && PasswordSecurityUtils.verifyPassword(credentials.getPassword(), principal.getPasswordHash(), principal.getSalt());
     }
 }
