@@ -16,11 +16,14 @@ import java.util.Arrays;
 public class SimpleAuthenticationProcessor implements IAuthenticationProcessor {
     @Override
     public boolean authenticate(AuthPrincipal principal, Credentials credentials) {
-        return principal != null && credentials != null && principal.getUsername() != null && credentials.getUserIdentifier() != null
+        boolean isSuccess = principal != null && credentials != null && principal.getUsername() != null && credentials.getUserIdentifier() != null
                 && principal.getUsername().length > 0 && credentials.getUserIdentifier().length > 0
                 && principal.getPasswordHash() != null && credentials.getPassword() != null && principal.getSalt() != null
                 && principal.getPasswordHash().length > 0 && credentials.getPassword().length > 0 && principal.getSalt().length > 0
                 && Arrays.equals(credentials.getUserIdentifier(), principal.getUsername())
                 && PasswordSecurityUtils.verifyPassword(credentials.getPassword(), principal.getPasswordHash(), principal.getSalt());
+        if (credentials != null)
+            PasswordSecurityUtils.clearChars(credentials.getUserIdentifier());
+        return isSuccess;
     }
 }

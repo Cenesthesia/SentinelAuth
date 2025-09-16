@@ -83,6 +83,6 @@ public class Credentials {
 
     @Override
     public String toString() {
-        return String.format("Credentials{userIdentifier='%s', password=%s'}", Arrays.toString(userIdentifier), password == null ? "null" : "*****");
+        return String.format("Credentials{userIdentifier='%s', password=%s'}", new String(userIdentifier), password == null ? "null" : "*****");
     }
 }
