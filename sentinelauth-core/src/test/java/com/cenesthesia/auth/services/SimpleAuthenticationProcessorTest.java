@@ -2,6 +2,7 @@ package com.cenesthesia.auth.services;
 
 import com.cenesthesia.auth.api.IAuthenticationProcessor;
 import com.cenesthesia.auth.common.AuthPrincipal;
+import com.cenesthesia.auth.common.AuthResult;
 import com.cenesthesia.auth.common.Credentials;
 import com.cenesthesia.auth.core.SimpleAuthenticationProcessor;
 import com.cenesthesia.auth.utils.PasswordSecurityUtils;
@@ -13,7 +14,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
-import java.util.Set;
 
 @Tag("unit")
 public class SimpleAuthenticationProcessorTest {
@@ -29,91 +29,112 @@ public class SimpleAuthenticationProcessorTest {
     //===================================== authenticate tests =========================================================
 
     @Test
-    @DisplayName("authenticate should return true when credentials password and username is correct for principal")
+    @DisplayName("authenticate should return successful AuthResult when credentials password and username is correct for principal")
     void authenticateWhenPasswordAndUsernameIsCorrect() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("testUser".toCharArray(), password);;
-        boolean result = auth.authenticate(principal, credentials);
-        assertTrue(result);
+        Credentials credentials = new Credentials("testUser".toCharArray(), password);
+        AuthResult result = auth.authenticate(principal, credentials);
+        assertTrue(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Authentication successful", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticate should return false when credentials password is incorrect for principal")
+    @DisplayName("authenticate should return failed AuthResult when credentials password is incorrect for principal")
     void authenticateWhenPasswordIsIncorrect() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(password, salt));
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("testUser".toCharArray(), "otherPassword".toCharArray());;
-        boolean result = auth.authenticate(principal, credentials);
-        assertFalse(result);
+        Credentials credentials = new Credentials("testUser".toCharArray(), "otherPassword".toCharArray());
+        AuthResult result = auth.authenticate(principal, credentials);
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Password verification failed", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticate should return false when credentials username is incorrect for principal")
+    @DisplayName("authenticate should return failed AuthResult when credentials username is incorrect for principal")
     void authenticateWhenUsernameIsIncorrect() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("otherUser".toCharArray(), password);;
-        boolean result = auth.authenticate(principal, credentials);
-        assertFalse(result);
+        Credentials credentials = new Credentials("otherUser".toCharArray(), password);
+        AuthResult result = auth.authenticate(principal, credentials);
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Principal user identifier does not match credentials identifier", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticate should return false when principal password is null")
+    @DisplayName("authenticate should return failed AuthResult when principal password is null")
     void authenticateWhenPrincipalPasswordIsNull() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(null);
         principal.setSalt(salt);
         Credentials credentials = new Credentials("testUser".toCharArray(), password);
-        boolean result = auth.authenticate(principal, credentials);
-        assertFalse(result);
+        AuthResult result = auth.authenticate(principal, credentials);
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Password hash, password or salt is null", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticate should return false when principal password is empty")
+    @DisplayName("authenticate should return failed AuthResult when principal password is empty")
     void authenticateWhenPrincipalPasswordIsEmpty() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(new byte[0]);
         principal.setSalt(salt);
         Credentials credentials = new Credentials("testUser".toCharArray(), password);
-        boolean result = auth.authenticate(principal, credentials);
-        assertFalse(result);
+        AuthResult result = auth.authenticate(principal, credentials);
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Password hash, password or salt is empty", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticate should return false when principal salt is null")
+    @DisplayName("authenticate should return failed AuthResult when principal salt is null")
     void authenticateWhenPrincipalSaltIsNull() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(null);
         Credentials credentials = new Credentials("testUser".toCharArray(), password);
-        boolean result = auth.authenticate(principal, credentials);
-        assertFalse(result);
+        AuthResult result = auth.authenticate(principal, credentials);
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Password hash, password or salt is null", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticate should return false when principal salt is empty")
+    @DisplayName("authenticate should return failed AuthResult when principal salt is empty")
     void authenticateWhenPrincipalSaltIsEmpty() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(new byte[0]);
         Credentials credentials = new Credentials("testUser".toCharArray(), password);
-        boolean result = auth.authenticate(principal, credentials);
-        assertFalse(result);
+        AuthResult result = auth.authenticate(principal, credentials);
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Password hash, password or salt is empty", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticate should return false when principal username is null")
+    @DisplayName("authenticate should return failed AuthResult when principal username is null")
     void authenticateWhenPrincipalUsernameIsNull() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
@@ -121,157 +142,232 @@ public class SimpleAuthenticationProcessorTest {
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
         Credentials credentials = new Credentials("testUser".toCharArray(), password);
-        boolean result = auth.authenticate(principal, credentials);
-        assertFalse(result);
+        AuthResult result = auth.authenticate(principal, credentials);
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Principal or credentials user identifier is null", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticate should return false when credentials password is null")
+    @DisplayName("authenticate should return failed AuthResult when principal username is empty")
+    void authenticateWhenPrincipalUsernameIsEmpty() {
+        char[] password = "testPassword".toCharArray();
+        byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+        principal.setUsername(new char[0]);
+        principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
+        principal.setSalt(salt);
+        Credentials credentials = new Credentials("testUser".toCharArray(), password);
+        AuthResult result = auth.authenticate(principal, credentials);
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Principal or credentials user identifier is empty", result.getMessages().get(0));
+    }
+
+    @Test
+    @DisplayName("authenticate should return failed AuthResult when credentials password is null")
     void authenticateWhenCredentialsPasswordIsNull() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
         Credentials credentials = new Credentials("testUser".toCharArray(), null);
-        boolean result = auth.authenticate(principal, credentials);
-        assertFalse(result);
+        AuthResult result = auth.authenticate(principal, credentials);
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Password hash, password or salt is null", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticate should return false when credentials password is empty")
+    @DisplayName("authenticate should return failed AuthResult when credentials password is empty")
     void authenticateWhenCredentialsPasswordIsEmpty() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
         Credentials credentials = new Credentials("testUser".toCharArray(), new char[0]);
-        boolean result = auth.authenticate(principal, credentials);
-        assertFalse(result);
+        AuthResult result = auth.authenticate(principal, credentials);
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Password hash, password or salt is empty", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticate should return false when credentials userIndf is null")
+    @DisplayName("authenticate should return failed AuthResult when credentials userIndf is null")
     void authenticateWhenCredentialsUserIndfIsNull() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
         Credentials credentials = new Credentials(null, password);
-        boolean result = auth.authenticate(principal, credentials);
-        assertFalse(result);
+        AuthResult result = auth.authenticate(principal, credentials);
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Principal or credentials user identifier is null", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticate should return false when principal is null")
+    @DisplayName("authenticate should return failed AuthResult when credentials userIndf is empty")
+    void authenticateWhenCredentialsUserIndfIsEmpty() {
+        char[] password = "testPassword".toCharArray();
+        byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+        principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
+        principal.setSalt(salt);
+        Credentials credentials = new Credentials(new char[0], password);
+        AuthResult result = auth.authenticate(principal, credentials);
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Principal or credentials user identifier is empty", result.getMessages().get(0));
+    }
+
+    @Test
+    @DisplayName("authenticate should return failed AuthResult when principal is null")
     void authenticateWhenPrincipalIsNull() {
         char[] password = "testPassword".toCharArray();
         Credentials credentials = new Credentials("testUser".toCharArray(), password);
-        boolean result = auth.authenticate(null, credentials);
-        assertFalse(result);
+        AuthResult result = auth.authenticate(null, credentials);
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Authenticate principal cannot be null", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticate should return false when credentials is null")
+    @DisplayName("authenticate should return failed AuthResult when credentials is null")
     void authenticateWhenCredentialsIsNull() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
-        boolean result = auth.authenticate(principal, null);
-        assertFalse(result);
+        AuthResult result = auth.authenticate(principal, null);
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Credentials cannot be null", result.getMessages().get(0));
     }
 
     //================================ authenticateWithContext tests ===================================================
 
     @Test
-    @DisplayName("authenticateWithContext should work like authenticate and return true when credentials password and " +
-            "username is correct for principal")
+    @DisplayName("authenticateWithContext should work like authenticate and return successful AuthResult when " +
+            "credentials password and username is correct for principal")
     void authenticateWithContextWhenPasswordAndUsernameIsCorrect() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("testUser".toCharArray(), password);;
-        boolean result = auth.authenticateWithContext(principal, credentials, new Object());
-        assertTrue(result);
+        Credentials credentials = new Credentials("testUser".toCharArray(), password);
+        AuthResult result = auth.authenticateWithContext(principal, credentials, new Object());
+        assertTrue(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Authentication successful", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticateWithContext should work like authenticate and return false when credentials password is " +
-            "incorrect for principal")
+    @DisplayName("authenticateWithContext should work like authenticate and return failed AuthResult when " +
+            "credentials password is incorrect for principal")
     void authenticateWithContextWhenPasswordIsIncorrect() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(password, salt));
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("testUser".toCharArray(), "otherPassword".toCharArray());;
-        boolean result = auth.authenticateWithContext(principal, credentials, new Object());
-        assertFalse(result);
+        Credentials credentials = new Credentials("testUser".toCharArray(), "otherPassword".toCharArray());
+        AuthResult result = auth.authenticateWithContext(principal, credentials, new Object());
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Password verification failed", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticateWithContext should work like authenticate and return false when credentials username is " +
-            "incorrect for principal")
+    @DisplayName("authenticateWithContext should work like authenticate and return failed AuthResult when credentials " +
+            "username is incorrect for principal")
     void authenticateWithContextWhenUsernameIsIncorrect() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
-        Credentials credentials = new Credentials("otherUser".toCharArray(), password);;
-        boolean result = auth.authenticateWithContext(principal, credentials, new Object());
-        assertFalse(result);
+        Credentials credentials = new Credentials("otherUser".toCharArray(), password);
+        AuthResult result = auth.authenticateWithContext(principal, credentials, new Object());
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Principal user identifier does not match credentials identifier", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticateWithContext should work like authenticate and return false when principal password is null")
+    @DisplayName("authenticateWithContext should work like authenticate and return failed AuthResult when principal " +
+            "password is null")
     void authenticateWithContextWhenPrincipalPasswordIsNull() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(null);
         principal.setSalt(salt);
         Credentials credentials = new Credentials("testUser".toCharArray(), password);
-        boolean result = auth.authenticateWithContext(principal, credentials, new Object());
-        assertFalse(result);
+        AuthResult result = auth.authenticateWithContext(principal, credentials, new Object());
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Password hash, password or salt is null", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticateWithContext should work like authenticate and return false when principal password is empty")
+    @DisplayName("authenticateWithContext should work like authenticate and return failed AuthResult when principal " +
+            "password is empty")
     void authenticateWithContextWhenPrincipalPasswordIsEmpty() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(new byte[0]);
         principal.setSalt(salt);
         Credentials credentials = new Credentials("testUser".toCharArray(), password);
-        boolean result = auth.authenticateWithContext(principal, credentials, new Object());
-        assertFalse(result);
+        AuthResult result = auth.authenticateWithContext(principal, credentials, new Object());
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Password hash, password or salt is empty", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticateWithContext should work like authenticate and return false when principal salt is null")
+    @DisplayName("authenticateWithContext should work like authenticate and return failed AuthResult when principal " +
+            "salt is null")
     void authenticateWithContextWhenPrincipalSaltIsNull() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(null);
         Credentials credentials = new Credentials("testUser".toCharArray(), password);
-        boolean result = auth.authenticateWithContext(principal, credentials, new Object());
-        assertFalse(result);
+        AuthResult result = auth.authenticateWithContext(principal, credentials, new Object());
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Password hash, password or salt is null", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticateWithContext should work like authenticate and return false when principal salt is empty")
+    @DisplayName("authenticateWithContext should work like authenticate and return failed AuthResult when principal " +
+            "salt is empty")
     void authenticateWithContextWhenPrincipalSaltIsEmpty() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(new byte[0]);
         Credentials credentials = new Credentials("testUser".toCharArray(), password);
-        boolean result = auth.authenticateWithContext(principal, credentials, new Object());
-        assertFalse(result);
+        AuthResult result = auth.authenticateWithContext(principal, credentials, new Object());
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Password hash, password or salt is empty", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticateWithContext should work like authenticate and return false when principal username is null")
+    @DisplayName("authenticateWithContext should work like authenticate and return failed AuthResult when principal " +
+            "username is null")
     void authenticateWithContextWhenPrincipalUsernameIsNull() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
@@ -279,64 +375,118 @@ public class SimpleAuthenticationProcessorTest {
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
         Credentials credentials = new Credentials("testUser".toCharArray(), password);
-        boolean result = auth.authenticateWithContext(principal, credentials, new Object());
-        assertFalse(result);
+        AuthResult result = auth.authenticateWithContext(principal, credentials, new Object());
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Principal or credentials user identifier is null", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticateWithContext should work like authenticate return false when credentials password is null")
+    @DisplayName("authenticateWithContext should work like authenticate and return failed AuthResult when principal " +
+            "username is empty")
+    void authenticateWithContextWhenPrincipalUsernameIsEmpty() {
+        char[] password = "testPassword".toCharArray();
+        byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+        principal.setUsername(new char[0]);
+        principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
+        principal.setSalt(salt);
+        Credentials credentials = new Credentials("testUser".toCharArray(), password);
+        AuthResult result = auth.authenticateWithContext(principal, credentials, new Object());
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Principal or credentials user identifier is empty", result.getMessages().get(0));
+    }
+
+    @Test
+    @DisplayName("authenticateWithContext should work like authenticate return failed AuthResult when credentials " +
+            "password is null")
     void authenticateWithContextWhenCredentialsPasswordIsNull() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
         Credentials credentials = new Credentials("testUser".toCharArray(), null);
-        boolean result = auth.authenticateWithContext(principal, credentials, new Object());
-        assertFalse(result);
+        AuthResult result = auth.authenticateWithContext(principal, credentials, new Object());
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Password hash, password or salt is null", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticateWithContext should work like authenticate and return false when credentials password is empty")
+    @DisplayName("authenticateWithContext should work like authenticate and return failed AuthResult when credentials " +
+            "password is empty")
     void authenticateWithContextWhenCredentialsPasswordIsEmpty() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
         Credentials credentials = new Credentials("testUser".toCharArray(), new char[0]);
-        boolean result = auth.authenticateWithContext(principal, credentials, new Object());
-        assertFalse(result);
+        AuthResult result = auth.authenticateWithContext(principal, credentials, new Object());
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Password hash, password or salt is empty", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticateWithContext should work like authenticate and return false when credentials userIndf is null")
+    @DisplayName("authenticateWithContext should work like authenticate and return failed AuthResult when credentials " +
+            "userIndf is null")
     void authenticateWithContextWhenCredentialsUserIndfIsNull() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
         Credentials credentials = new Credentials(null, password);
-        boolean result = auth.authenticateWithContext(principal, credentials, new Object());
-        assertFalse(result);
+        AuthResult result = auth.authenticateWithContext(principal, credentials, new Object());
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Principal or credentials user identifier is null", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticateWithContext should work like authenticate and return false when principal is null")
+    @DisplayName("authenticateWithContext should work like authenticate and return failed AuthResult when credentials " +
+            "userIndf is empty")
+    void authenticateWithContextWhenCredentialsUserIndfIsEmpty() {
+        char[] password = "testPassword".toCharArray();
+        byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+        principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
+        principal.setSalt(salt);
+        Credentials credentials = new Credentials(new char[0], password);
+        AuthResult result = auth.authenticateWithContext(principal, credentials, new Object());
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Principal or credentials user identifier is empty", result.getMessages().get(0));
+    }
+
+    @Test
+    @DisplayName("authenticateWithContext should work like authenticate and return failed AuthResult when principal is null")
     void authenticateWithContextWhenPrincipalIsNull() {
         char[] password = "testPassword".toCharArray();
         Credentials credentials = new Credentials("testUser".toCharArray(), password);
-        boolean result = auth.authenticateWithContext(null, credentials, new Object());
-        assertFalse(result);
+        AuthResult result = auth.authenticateWithContext(null, credentials, new Object());
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Authenticate principal cannot be null", result.getMessages().get(0));
     }
 
     @Test
-    @DisplayName("authenticateWithContext should work like authenticate and return false when credentials is null")
+    @DisplayName("authenticateWithContext should work like authenticate and return failed AuthResult when credentials is null")
     void authenticateWithContextWhenCredentialsIsNull() {
         char[] password = "testPassword".toCharArray();
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
-        boolean result = auth.authenticateWithContext(principal, null, new Object());
-        assertFalse(result);
+        AuthResult result = auth.authenticateWithContext(principal, null, new Object());
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertFalse(result.hasExceptions());
+        assertEquals("Credentials cannot be null", result.getMessages().get(0));
     }
 
     @Test
@@ -347,23 +497,23 @@ public class SimpleAuthenticationProcessorTest {
         byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
         principal.setPasswordHash(PasswordSecurityUtils.hashPassword(Arrays.copyOf(password, password.length), salt));
         principal.setSalt(salt);
-        boolean resultObjectContextWithCorrectPassword = auth.authenticateWithContext(principal,
-                new Credentials(username, Arrays.copyOf(password, password.length)), new Object());
-        boolean resultObjectContextWithWrongPassword = auth.authenticateWithContext(principal,
-                new Credentials(username, "otherPassword".toCharArray()), new Object());
-        boolean resultNullContextWithCorrectPassword = auth.authenticateWithContext(principal,
-                new Credentials(username, Arrays.copyOf(password, password.length)), null);
-        boolean resultNullContextWithWrongPassword = auth.authenticateWithContext(principal,
-                new Credentials(username, "otherPassword".toCharArray()), null);
-        boolean resultOtherContextWithCorrectPassword = auth.authenticateWithContext(principal,
-                new Credentials(username, Arrays.copyOf(password, password.length)), "context");
-        boolean resultOtherContextWithWrongPassword = auth.authenticateWithContext(principal,
-                new Credentials(username, "otherPassword".toCharArray()), "context");
-        assertTrue(resultObjectContextWithCorrectPassword);
-        assertFalse(resultObjectContextWithWrongPassword);
-        assertTrue(resultNullContextWithCorrectPassword);
-        assertFalse(resultNullContextWithWrongPassword);
-        assertTrue(resultOtherContextWithCorrectPassword);
-        assertFalse(resultOtherContextWithWrongPassword);
+        AuthResult resultObjectContextWithCorrectPassword = auth.authenticateWithContext(principal,
+                new Credentials(Arrays.copyOf(username, username.length), Arrays.copyOf(password, password.length)), new Object());
+        AuthResult resultObjectContextWithWrongPassword = auth.authenticateWithContext(principal,
+                new Credentials(Arrays.copyOf(username, username.length), "otherPassword".toCharArray()), new Object());
+        AuthResult resultNullContextWithCorrectPassword = auth.authenticateWithContext(principal,
+                new Credentials(Arrays.copyOf(username, username.length), Arrays.copyOf(password, password.length)), null);
+        AuthResult resultNullContextWithWrongPassword = auth.authenticateWithContext(principal,
+                new Credentials(Arrays.copyOf(username, username.length), "otherPassword".toCharArray()), null);
+        AuthResult resultOtherContextWithCorrectPassword = auth.authenticateWithContext(principal,
+                new Credentials(Arrays.copyOf(username, username.length), Arrays.copyOf(password, password.length)), "context");
+        AuthResult resultOtherContextWithWrongPassword = auth.authenticateWithContext(principal,
+                new Credentials(Arrays.copyOf(username, username.length), "otherPassword".toCharArray()), "context");
+        assertTrue(resultObjectContextWithCorrectPassword.isSuccess());
+        assertFalse(resultObjectContextWithWrongPassword.isSuccess());
+        assertTrue(resultNullContextWithCorrectPassword.isSuccess());
+        assertFalse(resultNullContextWithWrongPassword.isSuccess());
+        assertTrue(resultOtherContextWithCorrectPassword.isSuccess());
+        assertFalse(resultOtherContextWithWrongPassword.isSuccess());
     }
 }
