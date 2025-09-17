@@ -1,6 +1,7 @@
 package com.cenesthesia.auth.api;
 
 import com.cenesthesia.auth.common.AuthPrincipal;
+import com.cenesthesia.auth.common.AuthResult;
 
 import java.util.Collection;
 
@@ -17,12 +18,13 @@ public interface IAuthorizationProcessor {
      * @see IAuthorizationProcessor#hasAnyRole(AuthPrincipal, Collection)
      * @see IAuthorizationProcessor#hasAnyRoles(AuthPrincipal, Collection, int)
      * @see IAuthorizationProcessor#hasRoleWithContext(AuthPrincipal, String, Object)
+     * @see AuthResult
      *
      * @param principal пользовательская информация
      * @param role проверяемая роль
-     * @return true, если у пользователя есть роль {@code role}, иначе false
+     * @return успешность авторизации {@link AuthResult}
      */
-    boolean hasRole(AuthPrincipal principal, String role);
+    AuthResult hasRole(AuthPrincipal principal, String role);
 
     /**
      * Проверяет наличие нескольких ролей у пользователя
@@ -30,12 +32,13 @@ public interface IAuthorizationProcessor {
      * @see IAuthorizationProcessor#hasAnyRole(AuthPrincipal, Collection)
      * @see IAuthorizationProcessor#hasAnyRoles(AuthPrincipal, Collection, int)
      * @see IAuthorizationProcessor#hasRoleWithContext(AuthPrincipal, String, Object)
+     * @see AuthResult
      *
      * @param principal пользовательская информация
      * @param roles проверяемые роли
-     * @return true, если у пользователя есть все роли из {@code roles}, иначе false
+     * @return успешность авторизации {@link AuthResult}
      */
-    boolean hasAllRoles(AuthPrincipal principal, Collection<String> roles);
+    AuthResult hasAllRoles(AuthPrincipal principal, Collection<String> roles);
 
     /**
      * Проверяет наличие хотя бы одной роли из {@code roles} у пользователя
@@ -43,12 +46,13 @@ public interface IAuthorizationProcessor {
      * @see IAuthorizationProcessor#hasAllRoles(AuthPrincipal, Collection)
      * @see IAuthorizationProcessor#hasAnyRoles(AuthPrincipal, Collection, int)
      * @see IAuthorizationProcessor#hasRoleWithContext(AuthPrincipal, String, Object)
+     * @see AuthResult
      *
      * @param principal пользовательская информация
      * @param roles проверяемые роли
-     * @return true, если у пользователя есть хотя бы одна из ролей {@code roles}, иначе false
+     * @return успешность авторизации {@link AuthResult}
      */
-    boolean hasAnyRole(AuthPrincipal principal, Collection<String> roles);
+    AuthResult hasAnyRole(AuthPrincipal principal, Collection<String> roles);
 
     /**
      * Проверяет наличие хотя бы {@code count} ролей у пользователя
@@ -56,13 +60,14 @@ public interface IAuthorizationProcessor {
      * @see IAuthorizationProcessor#hasAllRoles(AuthPrincipal, Collection)
      * @see IAuthorizationProcessor#hasAnyRole(AuthPrincipal, Collection)
      * @see IAuthorizationProcessor#hasRoleWithContext(AuthPrincipal, String, Object)
+     * @see AuthResult
      *
      * @param principal пользовательская информация
      * @param roles проверяемые роли
      * @param count количество ролей из списка, которыми должен обладать пользователь
-     * @return true, если у пользователя есть хотя бы {@code count} ролей из {@code roles}, иначе false
+     * @return успешность авторизации {@link AuthResult}
      */
-    boolean hasAnyRoles(AuthPrincipal principal, Collection<String> roles, int count);
+    AuthResult hasAnyRoles(AuthPrincipal principal, Collection<String> roles, int count);
 
     /**
      * Проверяет наличие права у пользователя
@@ -70,12 +75,13 @@ public interface IAuthorizationProcessor {
      * @see IAuthorizationProcessor#hasAnyPermission(AuthPrincipal, Collection)
      * @see IAuthorizationProcessor#hasAnyPermissions(AuthPrincipal, Collection, int)
      * @see IAuthorizationProcessor#hasRoleWithContext(AuthPrincipal, String, Object)
+     * @see AuthResult
      *
      * @param principal пользовательская информация
      * @param permission право на проверку
-     * @return true, если у пользователя есть данное право, иначе false
+     * @return успешность авторизации {@link AuthResult}
      */
-    boolean hasPermission(AuthPrincipal principal, String permission);
+    AuthResult hasPermission(AuthPrincipal principal, String permission);
 
     /**
      * Проверяет наличие нескольких прав у пользователя
@@ -83,12 +89,13 @@ public interface IAuthorizationProcessor {
      * @see IAuthorizationProcessor#hasAnyPermission(AuthPrincipal, Collection)
      * @see IAuthorizationProcessor#hasAnyPermissions(AuthPrincipal, Collection, int)
      * @see IAuthorizationProcessor#hasPermissionWithContext(AuthPrincipal, String, Object)
+     * @see AuthResult
      *
      * @param principal пользовательская информация
      * @param permissions права на проверку
-     * @return true, если у пользователя есть все права из {@code permissions}, иначе false
+     * @return успешность авторизации {@link AuthResult}
      */
-    boolean hasAllPermissions(AuthPrincipal principal, Collection<String> permissions);
+    AuthResult hasAllPermissions(AuthPrincipal principal, Collection<String> permissions);
 
     /**
      * Проверяет наличие хотя бы одного права из {@code permissions} у пользователя
@@ -96,12 +103,13 @@ public interface IAuthorizationProcessor {
      * @see IAuthorizationProcessor#hasAllPermissions(AuthPrincipal, Collection)
      * @see IAuthorizationProcessor#hasAnyPermissions(AuthPrincipal, Collection, int)
      * @see IAuthorizationProcessor#hasPermissionWithContext(AuthPrincipal, String, Object)
+     * @see AuthResult
      *
      * @param principal пользовательская информация
      * @param permissions права на проверку
-     * @return true, если у пользователя есть хотя бы одно право из {@code permissions}, иначе false
+     * @return успешность авторизации {@link AuthResult}
      */
-    boolean hasAnyPermission(AuthPrincipal principal, Collection<String> permissions);
+    AuthResult hasAnyPermission(AuthPrincipal principal, Collection<String> permissions);
 
     /**
      * Проверяет наличие хотя бы {@code count} прав у пользователя из
@@ -110,13 +118,14 @@ public interface IAuthorizationProcessor {
      * @see IAuthorizationProcessor#hasAllPermissions(AuthPrincipal, Collection)
      * @see IAuthorizationProcessor#hasAnyPermission(AuthPrincipal, Collection)
      * @see IAuthorizationProcessor#hasPermissionWithContext(AuthPrincipal, String, Object)
+     * @see AuthResult
      *
      * @param principal пользовательская информация
      * @param permissions права на проверку
      * @param count количество прав из списка, которыми должен обладать пользователь
-     * @return true, если у пользователя есть хотя бы {@code count} прав из {@code permissions}
+     * @return успешность авторизации {@link AuthResult}
      */
-    boolean hasAnyPermissions(AuthPrincipal principal, Collection<String> permissions, int count);
+    AuthResult hasAnyPermissions(AuthPrincipal principal, Collection<String> permissions, int count);
 
     /**
      * Проверяет наличие у пользователя роли с дополнительной контекстной информацией.
@@ -126,13 +135,14 @@ public interface IAuthorizationProcessor {
      * @see IAuthorizationProcessor#hasAllRoles(AuthPrincipal, Collection)
      * @see IAuthorizationProcessor#hasAnyRole(AuthPrincipal, Collection)
      * @see IAuthorizationProcessor#hasAnyRoles(AuthPrincipal, Collection, int)
+     * @see AuthResult
      *
      * @param principal пользовательская информация
      * @param role проверяемая роль
      * @param context контекст
-     * @return true, если у пользователя есть роль {@code role} в рамках контекста, иначе false
+     * @return успешность авторизации {@link AuthResult}
      */
-    default boolean hasRoleWithContext(AuthPrincipal principal, String role, Object context) {
+    default AuthResult hasRoleWithContext(AuthPrincipal principal, String role, Object context) {
         return hasRole(principal, role);
     }
 
@@ -144,13 +154,14 @@ public interface IAuthorizationProcessor {
      * @see IAuthorizationProcessor#hasAllPermissions(AuthPrincipal, Collection)
      * @see IAuthorizationProcessor#hasAnyPermission(AuthPrincipal, Collection)
      * @see IAuthorizationProcessor#hasAnyPermissions(AuthPrincipal, Collection, int)
+     * @see AuthResult
      *
      * @param principal пользовательская информация
      * @param permission право на проверку
      * @param context контекст
-     * @return true, если у пользователя есть роль {@code role} в рамках контекста, иначе false
+     * @return успешность авторизации {@link AuthResult}
      */
-    default boolean hasPermissionWithContext(AuthPrincipal principal, String permission, Object context) {
+    default AuthResult hasPermissionWithContext(AuthPrincipal principal, String permission, Object context) {
         return hasPermission(principal, permission);
     }
 }
