@@ -13,6 +13,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+//TODO: Можно добавить лимит попыток аутентификации, либо оставить на усмотрение разработчиков
+
 /**
  * Потокобезопасный сервис аутентификации для простых однопользовательских приложений.
  * <p>
@@ -99,7 +101,7 @@ public final class SimpleAuthenticationService {
      * @return результат операции инициализации {@link AuthResult}
      * @throws NullPointerException, если любой из параметров null
      */
-    public synchronized AuthResult initialize(IAuthUserRepository repository) {
+    public AuthResult initialize(IAuthUserRepository repository) {
         return initialize(repository, new SimpleAuthenticationProcessor(), new SimpleAuthorizationProcessor());
     }
 
@@ -111,15 +113,8 @@ public final class SimpleAuthenticationService {
      * @return результат операции инициализации {@link AuthResult}
      * @throws NullPointerException, если любой из параметров null
      */
-    public synchronized void initialize(IAuthUserRepository repository, IAuthenticationProcessor authenticate) {
-        if (isInitialized.get()) {
-            throw new IllegalStateException("SimpleAuthenticationService has already been initialized");
-        }
-        this.repository = Objects.requireNonNull(repository, "Initialize error: user repository cannot be null");
-        this.authenticate = Objects.requireNonNull(authenticate, "Initialize error: authenticate processor cannot be null");
-        this.authorization = new SimpleAuthorizationProcessor();
-
-        isInitialized.set(true);
+    public AuthResult initialize(IAuthUserRepository repository, IAuthenticationProcessor authenticate) {
+        return initialize(repository, authenticate, new SimpleAuthorizationProcessor());
     }
 
     /**
@@ -130,15 +125,8 @@ public final class SimpleAuthenticationService {
      * @return результат операции инициализации {@link AuthResult}
      * @throws NullPointerException, если любой из параметров null
      */
-    public synchronized void initialize(IAuthUserRepository repository, IAuthorizationProcessor authorization) {
-        if (isInitialized.get()) {
-            throw new IllegalStateException("SimpleAuthenticationService has already been initialized");
-        }
-        this.repository = Objects.requireNonNull(repository, "Initialize error: user repository cannot be null");
-        this.authenticate = new SimpleAuthenticationProcessor();
-        this.authorization = Objects.requireNonNull(authorization, "Initialize error: authorization processor cannot be null");
-
-        isInitialized.set(true);
+    public AuthResult initialize(IAuthUserRepository repository, IAuthorizationProcessor authorization) {
+        return initialize(repository, new SimpleAuthenticationProcessor(), authorization);
     }
 
     /**
@@ -153,7 +141,7 @@ public final class SimpleAuthenticationService {
      * @return результат операции инициализации {@link AuthResult}
      * @throws  NullPointerException, если любой из параметров null
      */
-    public synchronized AuthResult initialize(IAuthUserRepository repository, IAuthenticationProcessor authenticate,
+    public AuthResult initialize(IAuthUserRepository repository, IAuthenticationProcessor authenticate,
                                         IAuthorizationProcessor authorization) {
         lock.writeLock().lock();
         try {
@@ -200,7 +188,7 @@ public final class SimpleAuthenticationService {
      * @param credentialsProvider источник реквизитов
      * @return результат операции установки {@link AuthResult}
      */
-    public synchronized AuthResult setCredentialsProvider(ICredentialsProvider credentialsProvider) {
+    public AuthResult setCredentialsProvider(ICredentialsProvider credentialsProvider) {
         this.credentialsProvider.set(credentialsProvider);
         return AuthResult.success("Credentials provider set successfully");
     }
@@ -262,8 +250,8 @@ public final class SimpleAuthenticationService {
         PasswordSecurityUtils.clearChars(principal.getUsername());
         PasswordSecurityUtils.clearBytes(principal.getPasswordHash());
         PasswordSecurityUtils.clearBytes(principal.getSalt());
-        principal.setRoles(null);
-        principal.setPermissions(null);
+        principal.clearRoles();
+        principal.clearPermission();
     }
 
     /**
@@ -274,7 +262,7 @@ public final class SimpleAuthenticationService {
      * @see SimpleAuthenticationService#authenticateWithContext(Credentials, Object)
      *
      * @param credentials реквизиты пользователя
-     * @return результат аутентификации {@link AuthResult} с детальной информации
+     * @return результат аутентификации {@link AuthResult} с детальной информацией
      */
     public AuthResult authenticate(Credentials credentials) {
         lock.writeLock().lock();
@@ -289,8 +277,7 @@ public final class SimpleAuthenticationService {
                 String userName = new String(credentials.getUserIdentifier());
                 Optional<AuthPrincipal> user = repository.findByUsername(userName);
                 if (user.isEmpty())
-                    return AuthResult.failure(String.format("The user with the identifier %s was not found in the repository",
-                            new String(credentials.getUserIdentifier())));
+                    return AuthResult.failure("The user was not found in the repository");
 
                 AuthResult authResult = authenticate.authenticate(user.get(), credentials);
                 if (authResult.isSuccess()) {
@@ -319,10 +306,12 @@ public final class SimpleAuthenticationService {
      * минимизации времени блокировки.
      * </p>
      * @see SimpleAuthenticationService#authenticateWithContext(Credentials, Object)
+     * @see SimpleAuthenticationService#requireAuthenticate()
+     * @see SimpleAuthenticationService#requireAuthenticateWithContext(Object)
      *
-     * @return результат аутентификации {@link AuthResult} с детальной информации
+     * @return результат аутентификации {@link AuthResult} с детальной информацией
      */
-    public AuthResult requireAuthenticate() throws AuthException {
+    public AuthResult requireAuthenticate() {
         lock.writeLock().lock();
         try {
             AuthResult initChack = checkInitialization();
@@ -373,10 +362,12 @@ public final class SimpleAuthenticationService {
      * Выполняет аутентификацию пользователя с учетом дополнительного контекста. Заделка для
      * кастомных сервисов. По умолчанию делегирует вызов методу {@link SimpleAuthenticationService#authenticate(Credentials)}
      * @see SimpleAuthenticationService#authenticate(Credentials)
+     * @see SimpleAuthenticationService#requireAuthenticate()
+     * @see SimpleAuthenticationService#requireAuthenticateWithContext(Object)
      *
      * @param credentials реквизиты аутентификации
      * @param context дополнительный контекст
-     * @return результат аутентификации {@link AuthResult} с детальной информации
+     * @return результат аутентификации {@link AuthResult} с детальной информацией
      */
     public AuthResult authenticateWithContext(Credentials credentials, Object context) {
         AuthResult result = authenticate(credentials);
@@ -389,9 +380,11 @@ public final class SimpleAuthenticationService {
      * Выполняет аутентификацию пользователя с использованием источника реквизитов и дополнительного контекста. Заделка для
      * кастомных сервисов. По умолчанию делегирует вызов методу {@link SimpleAuthenticationService#authenticate(Credentials)}
      * @see SimpleAuthenticationService#authenticate(Credentials)
+     * @see SimpleAuthenticationService#authenticateWithContext(Credentials, Object)
+     * @see SimpleAuthenticationService#requireAuthenticate()
      *
      * @param context дополнительный контекст
-     * @return результат аутентификации {@link AuthResult} с детальной информации
+     * @return результат аутентификации {@link AuthResult} с детальной информацией
      */
     public AuthResult requireAuthenticateWithContext(Object context) {
         AuthResult result = requireAuthenticate();
@@ -401,269 +394,768 @@ public final class SimpleAuthenticationService {
     }
 
     /**
-     * Завершает сеанс аутентификации пользователя
+     * Завершает сеанс аутентификации пользователя.
+     * <p>
+     * <b>Потокобезопасность: </b>использует write lock для изменения состояния аутентификации.
+     * </p>
+     * @see SimpleAuthenticationService#logout(char[])
      *
-     * @return true, если сеанс успешно завершен, иначе false
+     * @return результат операции выхода {@link AuthResult} с детальной информацией
      */
-    public synchronized boolean logout() {
+    public AuthResult logout() {
+        lock.writeLock().lock();
         try {
-            checkInitialization();
-            checkAuthenticate();
-            resetState();
-            return true;
+            AuthResult initCheck = checkInitialization();
+            if (!initCheck.isSuccess()) {
+                return initCheck;
+            }
+
+            if (isAuthenticated.get()) {
+                resetState();
+                return AuthResult.success("Logout successful");
+            }
+
+            return AuthResult.success("No Active session to logout");
         } catch (Exception e) {
-            return false;
+            return AuthResult.failure(String.format("Unexpected error during logout. Error: %s", e.getMessage()), e);
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
     /**
      * Завершает сеанс аутентификации пользователя по его уникальному идентификатору
      * !!(Наработка на будущее)
+     * <p>
+     * <b>Потокобезопасность: </b>использует write lock для изменения состояния аутентификации.
+     * </p>
+     * @see SimpleAuthenticationService#logout()
      *
-     * @param id идентификатор сеанса
-     * @return true, если сеанс успешно завершен, иначе false
+     * @param id идентификатор пользователя
+     * @return результат операции выхода {@link AuthResult} с детальной информацией
      */
-    public synchronized boolean logout(char[] id) {
+    public AuthResult logout(char[] id) {
+        lock.writeLock().lock();
         try {
-            checkInitialization();
-            checkAuthenticate();
-            if (Arrays.equals(principal.get().getId(), id) || Arrays.equals(principal.get().getUsername(), id)) {
-                resetState();
-                return true;
-            } else {
-                return false;
+            AuthResult initCheck = checkInitialization();
+            if (!initCheck.isSuccess()) {
+                return initCheck;
             }
+
+            AuthResult authCheck = checkAuthenticate();
+            if (!authCheck.isSuccess()) {
+                return authCheck;
+            }
+
+            AuthPrincipal currentPrincipal = principal.get();
+            if (currentPrincipal != null && Arrays.equals(currentPrincipal.getId(), id)
+                || Arrays.equals(currentPrincipal.getUsername(), id)) {
+                resetState();
+                return AuthResult.success("Logout successful");
+            }
+
+            return AuthResult.failure("Session ID does not match current session");
         } catch (Exception e) {
-            return false;
+            return AuthResult.failure(String.format("Unexpected error during logout. Error: %s", e.getMessage()), e);
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
     /**
-     * Проверяет статус аутентификации в системе
+     * Проверяет статус аутентификации текущего пользователя.
+     * <p>
+     * <b>Потокобезопасность: </b>использует read lock для чтения состояния аутентификации.
+     * </p>
      *
-     * @return true, если есть аутентифицированный пользователь, иначе false
+     * @return результат проверки статуса аутентификации {@link AuthResult} с детальной информацией
      */
-    public synchronized boolean verifyAuth() {
-        checkInitialization();
-        return isAuthenticated.get();
+    public AuthResult verifyAuth() {
+        lock.readLock().lock();
+        try {
+            AuthResult initCheck = checkInitialization();
+            if (!initCheck.isSuccess()) {
+                return initCheck;
+            }
+
+            return isAuthenticated.get() ?
+                    AuthResult.success("User is authenticated") :
+                    AuthResult.failure("User is not authenticated");
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**
-     * Проверяет наличие роли у аутентифицированного пользователя
+     * Проверяет наличие роли у аутентифицированного пользователя.
+     * <p>
+     * <b>Поткобезопасность: </b>использует read lock для чтения данных пользователя.
+     * </p>
      * @see SimpleAuthenticationService#hasAllRoles(Collection)
      * @see SimpleAuthenticationService#hasAnyRole(Collection)
      * @see SimpleAuthenticationService#hasAnyRoles(Collection, int)
      * @see SimpleAuthenticationService#hasRoleWithContext(String, Object)
      *
      * @param role проверяемая роль
-     * @return true, если у пользователя есть роль {@code role}, иначе false
+     * @return результат проверки роли {@link AuthResult} с детальной информацией
      */
-    public synchronized boolean hasRole(String role) {
-        checkInitialization();
-        checkAuthenticate();
-        return authorization.hasRole(principal.get(), role);
-    }
+    public AuthResult hasRole(String role) {
+        lock.readLock().lock();
+        try {
+            AuthResult initCheck = checkInitialization();
+            if (!initCheck.isSuccess()) {
+                return initCheck;
+            }
 
-    public boolean requireRole(String role) {
-        checkInitialization();
-        if (!isAuthenticated.get())
-            requireAuthenticate();
-        if (!isAuthenticated.get()) {
-            return false;
+            AuthResult authResult = checkAuthenticate();
+            if (!authResult.isSuccess()) {
+                return authResult;
+            }
+
+            AuthResult result = authorization.hasRole(principal.get(), role);
+            return result.isSuccess() ?
+                    AuthResult.success("User has required role: " + role) :
+                    AuthResult.failure("User does not have required role: " + role)
+                            .withMessages(result.getMessages())
+                            .withExceptions(result.getExceptions());
+        } finally {
+            lock.readLock().unlock();
         }
-        return authorization.hasRole(principal.get(), role);
     }
 
     /**
-     * Проверяет наличие нескольких ролей у аутентифицированного пользователя
+     * Проверяет наличие роли у аутентифицированного пользователя, при необходимости выполняя аутентификацию.
+     * <p>
+     * <b>Поткобезопасность: </b>использует read lock, но может временно переходить на write lock для выполнения
+     * аутентификации.
+     * </p>
+     * @see SimpleAuthenticationService#requireAllRoles(Collection)
+     * @see SimpleAuthenticationService#requireAnyRole(Collection)
+     * @see SimpleAuthenticationService#requireAnyRoles(Collection, int)
+     * @see SimpleAuthenticationService#requireRoleWithContext(String, Object)
+     *
+     * @param role проверяемая роль
+     * @return результат проверки роли {@link AuthResult} с детальной информацией
+     */
+    public AuthResult requireRole(String role) {
+        lock.readLock().lock();
+        try {
+            AuthResult initCheck = checkInitialization();
+            if (!initCheck.isSuccess()) {
+                return initCheck;
+            }
+
+            if (!isAuthenticated.get()) {
+                lock.readLock().unlock();
+                try {
+                    AuthResult authResult = requireAuthenticate();
+                    if (!authResult.isSuccess()) {
+                        return authResult;
+                    }
+                } finally {
+                    lock.readLock().lock();
+                }
+            }
+
+            AuthResult result = authorization.hasRole(principal.get(), role);
+            return result.isSuccess() ?
+                    AuthResult.success("User has required role: " + role) :
+                    AuthResult.failure("User does not have required role: " + role)
+                            .withMessages(result.getMessages())
+                            .withExceptions(result.getExceptions());
+        } finally {
+            lock.readLock().lock();
+        }
+    }
+
+    /**
+     * Проверяет наличие всех указанных ролей у аутентифицированного пользователя.
+     * <p>
+     * <b>Поткобезопасность: </b>использует read lock для чтения данных пользователя.
+     * </p>
      * @see SimpleAuthenticationService#hasRole(String)
      * @see SimpleAuthenticationService#hasAnyRole(Collection)
      * @see SimpleAuthenticationService#hasAnyRoles(Collection, int)
      * @see SimpleAuthenticationService#hasRoleWithContext(String, Object)
      *
-     * @param roles проверяемые роли
-     * @return true, если у пользователя есть все роли из {@code roles}, иначе false
+     * @param roles коллекция проверяемых ролей
+     * @return результат проверки ролей {@link AuthResult} с детальной информацией
      */
-    public synchronized boolean hasAllRoles(Collection<String> roles) {
-        checkInitialization();
-        checkAuthenticate();
-        return authorization.hasAllRoles(principal.get(), roles);
-    }
+    public AuthResult hasAllRoles(Collection<String> roles) {
+        lock.readLock().lock();
+        try {
+            AuthResult initCheck = checkInitialization();
+            if (!initCheck.isSuccess()) {
+                return initCheck;
+            }
 
-    public boolean requireAllRoles(Collection<String> roles) {
-        checkInitialization();
-        if (!isAuthenticated.get())
-            requireAuthenticate();
-        if (!isAuthenticated.get()) {
-            return false;
+            AuthResult authCheck = checkAuthenticate();
+            if (!authCheck.isSuccess()) {
+                return authCheck;
+            }
+
+            AuthResult result = authorization.hasAllRoles(principal.get(), roles);
+            return result.isSuccess() ?
+                    AuthResult.success("User has all required roles") :
+                    AuthResult.failure("User does not have all required roles")
+                            .withMessages(result.getMessages())
+                            .withExceptions(result.getExceptions());
+        } finally {
+            lock.readLock().unlock();
         }
-        return authorization.hasAllRoles(principal.get(), roles);
     }
 
     /**
-     * Проверяет наличие хотя бы одной роли из {@code roles} у аутентифицированного пользователя
+     * Проверяет наличие всех указанных ролей у аутентифицированного пользователя, при необходимости выполняя аутентификацию.
+     * <p>
+     * <b>Поткобезопасность: </b>использует read lock для чтения данных пользователя, может временно переходить на write lock
+     * для аутентификации.
+     * </p>
+     * @see SimpleAuthenticationService#requireRole(String)
+     * @see SimpleAuthenticationService#requireAnyRole(Collection)
+     * @see SimpleAuthenticationService#requireAnyRoles(Collection, int)
+     * @see SimpleAuthenticationService#requireRoleWithContext(String, Object)
+     *
+     * @param roles коллекция проверяемых ролей
+     * @return результат проверки ролей {@link AuthResult} с детальной информацией
+     */
+    public AuthResult requireAllRoles(Collection<String> roles) {
+        lock.readLock().lock();
+        try {
+            AuthResult initCheck = checkInitialization();
+            if (!initCheck.isSuccess()) {
+                return initCheck;
+            }
+
+            if (!isAuthenticated.get()) {
+                lock.readLock().unlock();
+                try {
+                    AuthResult authResult = requireAuthenticate();
+                    if (!authResult.isSuccess()) {
+                        return authResult;
+                    }
+                } finally {
+                    lock.readLock().lock();
+                }
+            }
+
+            AuthResult result = authorization.hasAllRoles(principal.get(), roles);
+            return result.isSuccess() ?
+                    AuthResult.success("User has all required roles") :
+                    AuthResult.failure("User does not have all required roles")
+                            .withMessages(result.getMessages())
+                            .withExceptions(result.getExceptions());
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * Проверяет наличие хотя бы одной роли из {@code roles} у аутентифицированного пользователя.
+     * <p>
+     * <b>Потокобезопасность: </b>используется read lock для чтения данных пользователя.
+     * </p>
      * @see SimpleAuthenticationService#hasRole(String)
      * @see SimpleAuthenticationService#hasAllRoles(Collection)
      * @see SimpleAuthenticationService#hasAnyRoles(Collection, int)
      * @see SimpleAuthenticationService#hasRoleWithContext(String, Object)
      *
-     * @param roles проверяемые роли
-     * @return true, если у пользователя есть хотя бы одна из ролей {@code roles}, иначе false
+     * @param roles коллекция проверяемых ролей
+     * @return результат проверки ролей {@link AuthResult} с детальной информацией
      */
-    public synchronized boolean hasAnyRole(Collection<String> roles) {
-        checkInitialization();
-        checkAuthenticate();
-        return authorization.hasAnyRole(principal.get(), roles);
-    }
+    public AuthResult hasAnyRole(Collection<String> roles) {
+        lock.readLock().lock();
+        try {
+            AuthResult initCheck = checkInitialization();
+            if (!initCheck.isSuccess()) {
+                return initCheck;
+            }
 
-    public boolean requireAnyRole(Collection<String> roles) {
-        checkInitialization();
-        if (!isAuthenticated.get())
-            requireAuthenticate();
-        if (!isAuthenticated.get()) {
-            return false;
+            AuthResult authCheck = checkAuthenticate();
+            if (!authCheck.isSuccess()) {
+                return authCheck;
+            }
+
+            AuthResult result = authorization.hasAnyRole(principal.get(), roles);
+            return result.isSuccess() ?
+                    AuthResult.success("User has at least one required role") :
+                    AuthResult.failure("User does not have any of the required roles")
+                            .withMessages(result.getMessages())
+                            .withExceptions(result.getExceptions());
+        } finally {
+            lock.readLock().unlock();
         }
-        return authorization.hasAnyRole(principal.get(), roles);
     }
 
     /**
-     * Проверяет наличие хотя бы {@code count} ролей у аутентифицированного пользователя
+     * Проверяет наличие хотя бы одной роли из {@code roles} у аутентифицированного пользователя, при необходимости выполняя
+     * аутентификацию.
+     * <p>
+     * <b>Потокобезопасность: </b>используется read lock для чтения данных пользователя, может переходить на write lock
+     * для аутентификации.
+     * </p>
+     * @see SimpleAuthenticationService#requireRole(String)
+     * @see SimpleAuthenticationService#requireAllRoles(Collection)
+     * @see SimpleAuthenticationService#requireAnyRoles(Collection, int)
+     * @see SimpleAuthenticationService#requireRoleWithContext(String, Object)
+     *
+     * @param roles коллекция проверяемых ролей
+     * @return результат проверки ролей {@link AuthResult} с детальной информацией
+     */
+    public AuthResult requireAnyRole(Collection<String> roles) {
+        lock.readLock().lock();
+        try {
+            AuthResult initCheck = checkInitialization();
+            if (!initCheck.isSuccess()) {
+                return initCheck;
+            }
+
+            if (!isAuthenticated.get()) {
+                lock.readLock().unlock();
+                try {
+                    AuthResult authResult = requireAuthenticate();
+                    if (!authResult.isSuccess()) {
+                        return authResult;
+                    }
+                } finally {
+                    lock.readLock().lock();
+                }
+            }
+
+            AuthResult result = authorization.hasAnyRole(principal.get(), roles);
+            return result.isSuccess() ?
+                    AuthResult.success("User has at least one required role") :
+                    AuthResult.failure("User does not have any of the required roles")
+                            .withMessages(result.getMessages())
+                            .withExceptions(result.getExceptions());
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * Проверяет наличие хотя бы {@code count} ролей из {@code roles} у аутентифицированного пользователя.
+     * <p>
+     * <b>Потокобезопасность: </b>используется read lock для чтения данных пользователя.
+     * </p>
      * @see SimpleAuthenticationService#hasRole(String)
      * @see SimpleAuthenticationService#hasAllRoles(Collection)
      * @see SimpleAuthenticationService#hasAnyRole(Collection)
      * @see SimpleAuthenticationService#hasRoleWithContext(String, Object)
      *
-     * @param roles проверяемые роли
-     * @param count количество ролей из списка, которыми должен обладать пользователь
-     * @return true, если у пользователя есть хотя бы {@code count} ролей из {@code roles}, иначе false
+     * @param roles коллекция проверяемых ролей
+     * @param count минимальное количество ролей из списка, которыми должен обладать пользователь
+     * @return результат проверки ролей {@link AuthResult} с детальной информацией
      */
-    public synchronized boolean hasAnyRoles(Collection<String> roles, int count) {
-        checkInitialization();
-        checkAuthenticate();
-        return authorization.hasAnyRoles(principal.get(), roles, count);
-    }
+    public AuthResult hasAnyRoles(Collection<String> roles, int count) {
+        lock.readLock().lock();
+        try {
+            AuthResult initCheck = checkInitialization();
+            if (!initCheck.isSuccess()) {
+                return initCheck;
+            }
 
-    public boolean requireAnyRoles(Collection<String> roles, int count) {
-        checkInitialization();
-        if (!isAuthenticated.get())
-            requireAuthenticate();
-        if (!isAuthenticated.get()) {
-            return false;
+            AuthResult authCheck = checkAuthenticate();
+            if (!authCheck.isSuccess()) {
+                return  authCheck;
+            }
+
+            AuthResult result = authorization.hasAnyRoles(principal.get(), roles, count);
+            return result.isSuccess() ?
+                    AuthResult.success("User has required number of roles") :
+                    AuthResult.failure("User does not have required number of roles")
+                            .withMessages(result.getMessages())
+                            .withExceptions(result.getExceptions());
+        } finally {
+            lock.readLock().unlock();
         }
-        return authorization.hasAnyRoles(principal.get(), roles, count);
     }
 
     /**
-     * Проверяет наличие права у аутентифицированного пользователя
+     * Проверяет наличие хотя бы {@code count} ролей из {@code roles} у аутентифицированного пользователя, при необходимости
+     * выполняя аутентификацию.
+     * <p>
+     * <b>Потокобезопасность: </b>используется read lock для чтения данных пользователя, может переходить на write lock
+     * для аутентификации.
+     * </p>
+     * @see SimpleAuthenticationService#requireRole(String)
+     * @see SimpleAuthenticationService#requireAllRoles(Collection)
+     * @see SimpleAuthenticationService#requireAnyRole(Collection)
+     * @see SimpleAuthenticationService#requireRoleWithContext(String, Object)
+     *
+     * @param roles коллекция проверяемых ролей
+     * @param count минимальное количество ролей из списка, которыми должен обладать пользователь
+     * @return результат проверки ролей {@link AuthResult} с детальной информацией
+     */
+    public AuthResult requireAnyRoles(Collection<String> roles, int count) {
+        lock.readLock().lock();
+        try {
+            AuthResult initCheck = checkInitialization();
+            if (!initCheck.isSuccess()) {
+                return initCheck;
+            }
+
+            if (!isAuthenticated.get()) {
+                lock.readLock().unlock();
+                try {
+                    AuthResult authResult = requireAuthenticate();
+                    if (!authResult.isSuccess()) {
+                        return authResult;
+                    }
+                } finally {
+                    lock.readLock().lock();
+                }
+            }
+
+            AuthResult result = authorization.hasAnyRoles(principal.get(), roles, count);
+            return result.isSuccess() ?
+                    AuthResult.success("User has required number of roles") :
+                    AuthResult.failure("User does not have required number of roles")
+                            .withMessages(result.getMessages())
+                            .withExceptions(result.getExceptions());
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * Проверяет наличие права у аутентифицированного пользователя.
+     * <p>
+     * <b>Потокобезопасность: </b>используется read lock для чтения данных пользователя.
+     * </p>
      * @see SimpleAuthenticationService#hasAllPermissions(Collection)
      * @see SimpleAuthenticationService#hasAnyPermission(Collection)
      * @see SimpleAuthenticationService#hasAnyPermissions(Collection, int)
      * @see SimpleAuthenticationService#hasPermissionWithContext(String, Object)
      *
      * @param permission право на проверку
-     * @return true, если у пользователя есть данное право, иначе false
+     * @return результат проверки права {@link AuthResult} с детальной информацией
      */
-    public synchronized boolean hasPermission(String permission) {
-        checkInitialization();
-        checkAuthenticate();
-        return authorization.hasPermission(principal.get(), permission);
-    }
+    public AuthResult hasPermission(String permission) {
+        lock.readLock().lock();
+        try {
+            AuthResult initCheck = checkInitialization();
+            if (!initCheck.isSuccess()) {
+                return initCheck;
+            }
 
-    public boolean requirePermission(String permission) {
-        checkInitialization();
-        if (!isAuthenticated.get())
-            requireAuthenticate();
-        if (!isAuthenticated.get()) {
-            return false;
+            AuthResult authCheck = checkAuthenticate();
+            if (!authCheck.isSuccess()) {
+                return authCheck;
+            }
+
+            AuthResult result = authorization.hasPermission(principal.get(), permission);
+            return result.isSuccess() ?
+                    AuthResult.success("User has required permission: " + permission) :
+                    AuthResult.failure("User does not have required permission: " + permission)
+                            .withMessages(result.getMessages())
+                            .withExceptions(result.getExceptions());
+        } finally {
+            lock.readLock().unlock();
         }
-        return authorization.hasPermission(principal.get(), permission);
     }
 
     /**
-     * Проверяет наличие нескольких прав у аутентифицированного пользователя
+     * Проверяет наличие права у аутентифицированного пользователя, при необходимости выполняя аутентификацию.
+     * <p>
+     * <b>Поткобезопасность: </b>использует read lock для чтения данных пользователя, но может временно переходить на
+     * write lock для выполнения аутентификации.
+     * </p>
+     * @see SimpleAuthenticationService#requireAllPermissions(Collection)
+     * @see SimpleAuthenticationService#requireAnyPermission(Collection) (Collection)
+     * @see SimpleAuthenticationService#requireAnyPermissions(Collection, int) (Collection, int)
+     * @see SimpleAuthenticationService#requirePermissionWithContext(String, Object)
+     *
+     * @param permission право на проверку
+     * @return результат проверки права {@link AuthResult} с детальной информацией
+     */
+    public AuthResult requirePermission(String permission) {
+        lock.readLock().lock();
+        try {
+            AuthResult initCheck = checkInitialization();
+            if (!initCheck.isSuccess()) {
+                return initCheck;
+            }
+
+            if (!isAuthenticated.get()) {
+                lock.readLock().unlock();
+                try {
+                    AuthResult authResult = requireAuthenticate();
+                    if (!authResult.isSuccess()) {
+                        return authResult;
+                    }
+                } finally {
+                    lock.readLock().lock();
+                }
+            }
+
+            AuthResult result = authorization.hasPermission(principal.get(), permission);
+            return result.isSuccess() ?
+                    AuthResult.success("User has required permission: " + permission) :
+                    AuthResult.failure("User does not have required permission: " + permission)
+                            .withMessages(result.getMessages())
+                            .withExceptions(result.getExceptions());
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * Проверяет наличие всех указанных прав у аутентифицированного пользователя.
+     * <p>
+     * <b>Потокобезопасность: </b>используется read lock для чтения данных пользователя.
+     * </p>
      * @see SimpleAuthenticationService#hasPermission(String)
      * @see SimpleAuthenticationService#hasAnyPermission(Collection)
      * @see SimpleAuthenticationService#hasAnyPermissions(Collection, int)
      * @see SimpleAuthenticationService#hasPermissionWithContext(String, Object)
      *
-     * @param permissions права на проверку
-     * @return true, если у пользователя есть все права из {@code permissions}, иначе false
+     * @param permissions коллекция прав на проверку
+     * @return результат проверки прав {@link AuthResult} с детальной информацией
      */
-    public synchronized boolean hasAllPermissions(Collection<String> permissions) {
-        checkInitialization();
-        checkAuthenticate();
-        return authorization.hasAllPermissions(principal.get(), permissions);
-    }
+    public AuthResult hasAllPermissions(Collection<String> permissions) {
+        lock.readLock().lock();
+        try {
+            AuthResult initCheck = checkInitialization();
+            if (!initCheck.isSuccess()) {
+                return initCheck;
+            }
 
-    public boolean requireAllPermissions(Collection<String> permissions) {
-        checkInitialization();
-        if (!isAuthenticated.get())
-            requireAuthenticate();
-        if (!isAuthenticated.get()) {
-            return false;
+            AuthResult authCheck = checkAuthenticate();
+            if (!authCheck.isSuccess()) {
+                return authCheck;
+            }
+
+            AuthResult result = authorization.hasAllPermissions(principal.get(), permissions);
+            return result.isSuccess() ?
+                    AuthResult.success("User has all required permissions") :
+                    AuthResult.failure("User does not have all required permissions")
+                            .withMessages(result.getMessages())
+                            .withExceptions(result.getExceptions());
+        } finally {
+            lock.readLock().unlock();
         }
-        return authorization.hasAllPermissions(principal.get(), permissions);
     }
 
     /**
-     * Проверяет наличие хотя бы одного права из {@code permissions} у аутентифицированного
-     * пользователя
+     * Проверяет наличие всех указанных прав у аутентифицированного пользователя, при необходимости выполняя аутентификацию.
+     * <p>
+     * <b>Потокобезопасность: </b>используется read lock для чтения данных пользователя, но может временно переходить на
+     * write lock для выполнения аутентификации.
+     * </p>
+     * @see SimpleAuthenticationService#requirePermission(String)
+     * @see SimpleAuthenticationService#requireAnyPermission(Collection)
+     * @see SimpleAuthenticationService#requireAnyPermissions(Collection, int)
+     * @see SimpleAuthenticationService#requirePermissionWithContext(String, Object)
+     *
+     * @param permissions коллекция прав на проверку
+     * @return результат проверки прав {@link AuthResult} с детальной информацией
+     */
+    public AuthResult requireAllPermissions(Collection<String> permissions) {
+        lock.readLock().lock();
+        try {
+            AuthResult initCheck = checkInitialization();
+            if (!initCheck.isSuccess()) {
+                return initCheck;
+            }
+
+            if (!isAuthenticated.get()) {
+                lock.readLock().unlock();
+                try {
+                    AuthResult authResult = requireAuthenticate();
+                    if (!authResult.isSuccess()) {
+                        return authResult;
+                    }
+                } finally {
+                    lock.readLock().lock();
+                }
+            }
+
+            AuthResult result = authorization.hasAllPermissions(principal.get(), permissions);
+            return result.isSuccess() ?
+                    AuthResult.success("User has all required permissions") :
+                    AuthResult.failure("User does not have all required permissions")
+                            .withMessages(result.getMessages())
+                            .withExceptions(result.getExceptions());
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * Проверяет наличие хотя бы одного права из {@code permissions} у аутентифицированного пользователя.
+     * <p>
+     * <b>Потокобезопасность: </b>используется read lock для чтения данных пользователя.
+     * </p>
      * @see SimpleAuthenticationService#hasPermission(String)
      * @see SimpleAuthenticationService#hasAllPermissions(Collection)
      * @see SimpleAuthenticationService#hasAnyPermissions(Collection, int)
      * @see SimpleAuthenticationService#hasPermissionWithContext(String, Object)
      *
-     * @param permissions права на проверку
-     * @return true, если у пользователя есть хотя бы одно право из {@code permissions}, иначе false
+     * @param permissions коллекция прав на проверку
+     * @return результат проверки прав {@link AuthResult} с детальной информацией
      */
-    public synchronized boolean hasAnyPermission(Collection<String> permissions) {
-        checkInitialization();
-        checkAuthenticate();
-        return authorization.hasAnyPermission(principal.get(), permissions);
-    }
+    public AuthResult hasAnyPermission(Collection<String> permissions) {
+        lock.readLock().lock();
+        try {
+            AuthResult initCheck = checkInitialization();
+            if (!initCheck.isSuccess()) {
+                return initCheck;
+            }
 
-    public boolean requireAnyPermission(Collection<String> permissions) {
-        checkInitialization();
-        if (!isAuthenticated.get())
-            requireAuthenticate();
-        if (!isAuthenticated.get()) {
-            return false;
+            AuthResult authCheck = checkAuthenticate();
+            if (!authCheck.isSuccess()) {
+                return authCheck;
+            }
+
+            AuthResult result = authorization.hasAnyPermission(principal.get(), permissions);
+            return result.isSuccess() ?
+                    AuthResult.success("User has at least one required permission") :
+                    AuthResult.failure("User does not have any of the required permissions")
+                            .withMessages(result.getMessages())
+                            .withExceptions(result.getExceptions());
+        } finally {
+            lock.readLock().unlock();
         }
-        return authorization.hasAnyPermission(principal.get(), permissions);
     }
 
     /**
-     * Проверяет наличие хотя бы {@code count} прав у аутентифицированного пользователя из
-     * {@code permissions}
+     * Проверяет наличие хотя бы одного права из {@code permissions} у аутентифицированного пользователя, при необходимости
+     * выполняя аутентификацию.
+     * <p>
+     * <b>Потокобезопасность: </b>используется read lock для чтения данных пользователя, но может временно переходить на
+     * write lock для выполнения аутентификации.
+     * </p>
+     * @see SimpleAuthenticationService#requirePermission(String)
+     * @see SimpleAuthenticationService#requireAllPermissions(Collection)
+     * @see SimpleAuthenticationService#requireAnyPermissions(Collection, int)
+     * @see SimpleAuthenticationService#requirePermissionWithContext(String, Object)
+     *
+     * @param permissions коллекция прав на проверку
+     * @return результат проверки прав {@link AuthResult} с детальной информацией
+     */
+    public AuthResult requireAnyPermission(Collection<String> permissions) {
+        lock.readLock().lock();
+        try {
+            AuthResult initCheck = checkInitialization();
+            if (!initCheck.isSuccess()) {
+                return initCheck;
+            }
+
+            if (!isAuthenticated.get()) {
+                lock.readLock().unlock();
+                try {
+                    AuthResult authResult = requireAuthenticate();
+                    if (!authResult.isSuccess()) {
+                        return authResult;
+                    }
+                } finally {
+                    lock.readLock().lock();
+                }
+            }
+
+            AuthResult result = authorization.hasAnyPermission(principal.get(), permissions);
+            return result.isSuccess() ?
+                    AuthResult.success("User has at least one required permission") :
+                    AuthResult.failure("User does not have any of the required permissions")
+                            .withMessages(result.getMessages())
+                            .withExceptions(result.getExceptions());
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * Проверяет наличие хотя бы {@code count} прав у аутентифицированного пользователя из {@code permissions}
+     * <p>
+     * <b>Потокобезопасность: </b>используется read lock для чтения данных пользователя.
+     * </p>
      * @see SimpleAuthenticationService#hasPermission(String)
      * @see SimpleAuthenticationService#hasAllPermissions(Collection)
      * @see SimpleAuthenticationService#hasAnyPermission(Collection)
      * @see SimpleAuthenticationService#hasPermissionWithContext(String, Object)
      *
      * @param permissions права на проверку
-     * @param count количество прав из списка, которыми должен обладать пользователь
-     * @return true, если у пользователя есть хотя бы {@code count} прав из {@code permissions}
+     * @param count минимальное количество прав из списка, которыми должен обладать пользователь
+     * @return результат проверки прав {@link AuthResult} с детальной информацией
      */
-    public synchronized boolean hasAnyPermissions(Collection<String> permissions, int count) {
-        checkInitialization();
-        checkAuthenticate();
-        return authorization.hasAnyPermissions(principal.get(), permissions, count);
+    public AuthResult hasAnyPermissions(Collection<String> permissions, int count) {
+        lock.readLock().lock();
+        try {
+            AuthResult initCheck = checkInitialization();
+            if (!initCheck.isSuccess()) {
+                return initCheck;
+            }
+
+            AuthResult authCheck = checkAuthenticate();
+            if (!authCheck.isSuccess()) {
+                return authCheck;
+            }
+
+            AuthResult result = authorization.hasAnyPermissions(principal.get(), permissions, count);
+            return result.isSuccess() ?
+                    AuthResult.success("User has required number of permissions") :
+                    AuthResult.failure("User does not have required number of permissions")
+                            .withMessages(result.getMessages())
+                            .withExceptions(result.getExceptions());
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
-    public boolean requireAnyPermissions(Collection<String> permissions, int count) {
-        checkInitialization();
-        if (!isAuthenticated.get())
-            requireAuthenticate();
-        if (!isAuthenticated.get()) {
-            return false;
+    /**
+     * Проверяет наличие хотя бы {@code count} прав у аутентифицированного пользователя из {@code permissions}, при
+     * необходимости выполняя аутентификацию.
+     * <p>
+     * <b>Потокобезопасность: </b>используется read lock для чтения данных пользователя, но может временно переходить на
+     * write lock для выполнения аутентификации.
+     * </p>
+     * @see SimpleAuthenticationService#requirePermission(String)
+     * @see SimpleAuthenticationService#requireAllPermissions(Collection)
+     * @see SimpleAuthenticationService#requireAnyPermission(Collection)
+     * @see SimpleAuthenticationService#requirePermissionWithContext(String, Object)
+     *
+     * @param permissions права на проверку
+     * @param count минимальное количество прав из списка, которыми должен обладать пользователь
+     * @return результат проверки прав {@link AuthResult} с детальной информацией
+     */
+    public AuthResult requireAnyPermissions(Collection<String> permissions, int count) {
+        lock.readLock().lock();
+        try {
+            AuthResult initCheck = checkInitialization();
+            if (!initCheck.isSuccess()) {
+                return initCheck;
+            }
+
+            if (!isAuthenticated.get()) {
+                lock.readLock().unlock();
+                try {
+                    AuthResult authResult = requireAuthenticate();
+                    if (!authResult.isSuccess()) {
+                        return authResult;
+                    }
+                } finally {
+                    lock.readLock().lock();
+                }
+            }
+
+            AuthResult result = authorization.hasAnyPermissions(principal.get(), permissions, count);
+            return result.isSuccess() ?
+                    AuthResult.success("User has required number of permissions") :
+                    AuthResult.failure("User does not have required number of permissions")
+                            .withMessages(result.getMessages())
+                            .withExceptions(result.getExceptions());
+        } finally {
+            lock.readLock().unlock();
         }
-        return authorization.hasAnyPermissions(principal.get(), permissions, count);
     }
 
     /**
      * Проверяет наличие у пользователя роли с дополнительной контекстной информацией.
-     * Заделка для кастомных авторизационных сервисов. По умолчанию функционал аналогичен
-     * {@link SimpleAuthenticationService#hasRole(String)}
+     * Заделка для кастомных авторизационных сервисов. По умолчанию делегирует вызов методу {@link SimpleAuthenticationService#hasRole(String)}.
+     * <p>
+     * <b>Потокобезопасность: </b>используется read lock для чтения данных пользователя.
+     * </p>
      * @see SimpleAuthenticationService#hasRole(String)
      * @see SimpleAuthenticationService#hasAllRoles(Collection)
      * @see SimpleAuthenticationService#hasAnyRole(Collection)
@@ -671,20 +1163,44 @@ public final class SimpleAuthenticationService {
      *
      * @param role проверяемая роль
      * @param context контекст
-     * @return true, если у пользователя есть роль {@code role} в рамках контекста, иначе false
+     * @return результат проверки роли {@link AuthResult} с детальной информацией
      */
-    public boolean hasRoleWithContext(String role, Object context) {
-        return hasRole(role);
+    public AuthResult hasRoleWithContext(String role, Object context) {
+        AuthResult result = hasRole(role);
+        return result.isSuccess() ?
+                result.withMessage("Contextual role check performed") :
+                result.withMessage("Contextual role check failed");
     }
 
-    public boolean requireRoleWithContext(String role, Object context) {
-        return requireRole(role);
+    /**
+     * Проверяет наличие у пользователя роли с дополнительной контекстной информацией, при необходимости выполняя аутентификацию.
+     * Заделка для кастомных авторизационных сервисов. По умолчанию делегирует вызов методу {@link SimpleAuthenticationService#requireRole(String)}.
+     * <p>
+     * <b>Потокобезопасность: </b>используется read lock для чтения данных пользователя, но может временно переходить на
+     * write lock для выполнения аутентификации.
+     * </p>
+     * @see SimpleAuthenticationService#requireRole(String)
+     * @see SimpleAuthenticationService#requireAllRoles(Collection)
+     * @see SimpleAuthenticationService#requireAnyRole(Collection)
+     * @see SimpleAuthenticationService#requireAnyRoles(Collection, int)
+     *
+     * @param role проверяемая роль
+     * @param context контекст
+     * @return результат проверки роли {@link AuthResult} с детальной информацией
+     */
+    public AuthResult requireRoleWithContext(String role, Object context) {
+        AuthResult result = requireRole(role);
+        return result.isSuccess() ?
+                result.withMessage("Contextual role check performed") :
+                result.withMessage("Contextual role check failed");
     }
 
     /**
      * Проверяет наличие права у пользователя с дополнительной контекстной информацией.
-     * Заделка для кастомных авторизационных сервисов. По умолчанию функционал аналогичен
-     * {@link SimpleAuthenticationService#hasPermission(String)}
+     * Заделка для кастомных авторизационных сервисов. По умолчанию делегирует вызов методу {@link SimpleAuthenticationService#hasPermission(String)}.
+     * <p>
+     * <b>Потокобезопасность: </b>используется read lock для чтения данных пользователя.
+     * </p>
      * @see SimpleAuthenticationService#hasPermission(String)
      * @see SimpleAuthenticationService#hasAllPermissions(Collection)
      * @see SimpleAuthenticationService#hasAnyPermission(Collection)
@@ -692,13 +1208,77 @@ public final class SimpleAuthenticationService {
      *
      * @param permission право на проверку
      * @param context контекст
-     * @return true, если у пользователя есть роль {@code role} в рамках контекста, иначе false
+     * @return результат проверки права {@link AuthResult} с детальной информацией
      */
-    public boolean hasPermissionWithContext(String permission, Object context) {
-        return hasPermission(permission);
+    public AuthResult hasPermissionWithContext(String permission, Object context) {
+        AuthResult result = hasPermission(permission);
+        return result.isSuccess() ?
+                result.withMessage("Contextual permission check performed") :
+                result.withMessage("Contextual permission check failed");
     }
 
-    public boolean requirePermissionWithContext(String permission, Object context) {
-        return requirePermission(permission);
+    /**
+     * Проверяет наличие права у пользователя с дополнительной контекстной информацией, при необходимости выполняя аутентификацию.
+     * Заделка для кастомных авторизационных сервисов. По умолчанию делегирует вызов методу {@link SimpleAuthenticationService#requirePermission(String)}.
+     * <p>
+     * <b>Потокобезопасность: </b>используется read lock для чтения данных пользователя, но может временно переходить на
+     * write lock для выполнения аутентификации.
+     * </p>
+     * @see SimpleAuthenticationService#requirePermission(String)
+     * @see SimpleAuthenticationService#requireAllPermissions(Collection)
+     * @see SimpleAuthenticationService#requireAnyPermission(Collection)
+     * @see SimpleAuthenticationService#requireAnyPermissions(Collection, int)
+     *
+     * @param permission право на проверку
+     * @param context контекст
+     * @return результат проверки права {@link AuthResult} с детальной информацией
+     */
+    public AuthResult requirePermissionWithContext(String permission, Object context) {
+        AuthResult result = requirePermission(permission);
+        return result.isSuccess() ?
+                result.withMessage("Contextual permission check performed") :
+                result.withMessage("Contextual permission check failed");
+    }
+
+    /**
+     * Возвращает уникальный идентификатор аутентифицированного пользователя в безопасном виде.
+     * <p>
+     * <b>Потокобезопасность: </b>использует read lock для чтения данных пользователя.
+     * </p>
+     *
+     * @return Optional с копией идентификатора пользователя или empty Optional
+     */
+    public Optional<String> getCurrentUserId() {
+        lock.readLock().lock();
+        try {
+            AuthPrincipal current = principal.get();
+            if (current != null && current.getId() != null) {
+                return Optional.of(new String(current.getId()));
+            }
+            return Optional.empty();
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * Возвращает имя текущего аутентифицированного пользователя в безопасном виде.
+     * <p>
+     * <b>Потокобезопасность: </b>использует read lock для чтения данных пользователя.
+     * </p>
+     *
+     * @return Optional с копией имени пользователя или empty Optional
+     */
+    public Optional<String> getCurrentUsername() {
+        lock.readLock().lock();
+        try {
+            AuthPrincipal current = principal.get();
+            if (current != null && current.getUsername() != null) {
+                return Optional.of(new String(current.getUsername()));
+            }
+            return Optional.empty();
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 }
