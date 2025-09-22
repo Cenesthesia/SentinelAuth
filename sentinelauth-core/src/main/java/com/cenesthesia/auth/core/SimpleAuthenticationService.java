@@ -23,13 +23,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * </p>
  * <p>
  * <b>Особенности потокобезопасности:</b>
+ * </p>
  * <ul>
  *     <li>Использует {@link ReentrantReadWriteLock} для разделения блокировок чтения/записи</li>
  *     <li>Атомарные операции с {@link AtomicReference} для отдельных полей</li>
  *     <li>Иммутабельные возвращаемые значения {@link AuthResult}</li>
  *     <li>Гарантированная очистка чувствительных данных в final-блоках</li>
  * </ul>
- * </p>
  *
  * <p><b>Пример использования:</b></p>
  * <pre>
@@ -99,7 +99,7 @@ public final class SimpleAuthenticationService {
      *
      * @param repository репозиторий для работы с пользователями
      * @return результат операции инициализации {@link AuthResult}
-     * @throws NullPointerException, если любой из параметров null
+     * @throws NullPointerException если любой из параметров null
      */
     public AuthResult initialize(IAuthUserRepository repository) {
         return initialize(repository, new SimpleAuthenticationProcessor(), new SimpleAuthorizationProcessor());
@@ -111,7 +111,7 @@ public final class SimpleAuthenticationService {
      * @param repository репозиторий для работы с пользователями
      * @param authenticate кастомный процессор аутентификации
      * @return результат операции инициализации {@link AuthResult}
-     * @throws NullPointerException, если любой из параметров null
+     * @throws NullPointerException если любой из параметров null
      */
     public AuthResult initialize(IAuthUserRepository repository, IAuthenticationProcessor authenticate) {
         return initialize(repository, authenticate, new SimpleAuthorizationProcessor());
@@ -123,7 +123,7 @@ public final class SimpleAuthenticationService {
      * @param repository репозиторий для работы с пользователями
      * @param authorization кастомный процессор авторизации
      * @return результат операции инициализации {@link AuthResult}
-     * @throws NullPointerException, если любой из параметров null
+     * @throws NullPointerException если любой из параметров null
      */
     public AuthResult initialize(IAuthUserRepository repository, IAuthorizationProcessor authorization) {
         return initialize(repository, new SimpleAuthenticationProcessor(), authorization);
@@ -139,7 +139,7 @@ public final class SimpleAuthenticationService {
      * @param authenticate кастомный процессор аутентификации
      * @param authorization кастомный процессор авторизации
      * @return результат операции инициализации {@link AuthResult}
-     * @throws  NullPointerException, если любой из параметров null
+     * @throws  NullPointerException если любой из параметров null
      */
     public AuthResult initialize(IAuthUserRepository repository, IAuthenticationProcessor authenticate,
                                         IAuthorizationProcessor authorization) {

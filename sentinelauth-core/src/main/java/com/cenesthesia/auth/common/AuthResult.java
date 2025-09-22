@@ -10,7 +10,7 @@ import java.util.List;
  * Унифицированный способ возврата результатов операций, позволяет клиенту получать детальную
  * информацию о результате операции (текстовые сообщения и исключения) вместо простого boolean значения.
  * </p>
- * @see AuthResult#builder(boolean);
+ * @see AuthResult#builder(boolean)
  * @see AuthResultBuilder
  *
  * @author Cenesthesia
@@ -362,5 +362,14 @@ public class AuthResult {
         public AuthResult build() {
             return new AuthResult(this.success, this.messages, this.exceptions);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "AuthResult{" +
+                "success=" + success +
+                ", messages=" + messages +
+                ", exceptions=" + exceptions +
+                '}';
     }
 }
