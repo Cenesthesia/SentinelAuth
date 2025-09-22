@@ -40,7 +40,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * AuthResult initResult = service.initialize(repo);
  *
  * // Установка источника реквизитов (для запросов начинающихся с require*. !* не обязательно для других методов)
- * SimpleAuthenticationService.setCredentialsProvider(new ConsoleCredentialsProvider());
+ * SimpleAuthenticationService.getInstance().setCredentialsProvider(new ConsoleCredentialsProvider());
  *
  * // Аутентификация
  * Credentials credentials = new Credentials("user".toCharArray(), "Password123#".toCharArray());
