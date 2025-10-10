@@ -163,6 +163,15 @@ public final class SimpleAuthenticationService {
     }
 
     /**
+     * Возвращает статус инициализации сервиса аутентификации.
+     *
+     * @return true, если сервис инициализирован, иначе false
+     */
+    public boolean isInitialized() {
+        return isInitialized.get();
+    }
+
+    /**
      * Возвращает Singleton экземпляр сервиса аутентификации.
      * Использует double-checked locking для потокобезопасности.
      *
@@ -564,7 +573,7 @@ public final class SimpleAuthenticationService {
                             .withMessages(result.getMessages())
                             .withExceptions(result.getExceptions());
         } finally {
-            lock.readLock().lock();
+            lock.readLock().unlock();
         }
     }
 
