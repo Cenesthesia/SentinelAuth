@@ -146,9 +146,14 @@ public final class SimpleAuthenticationService {
         lock.writeLock().lock();
         try {
             if (isInitialized.get()) {
-                return AuthResult.failure("SimpleAuthenticationService has already been initialized");
+                if (this.repository == repository &&
+                    this.authenticate == authenticate &&
+                    this.authorization == authorization) {
+                    return AuthResult.success("Service already initialized with same dependencies");
+                } else {
+                    return AuthResult.failure("Service already initialized with different dependencies");
+                }
             }
-
             this.repository = Objects.requireNonNull(repository, "Initialize error: user repository cannot be null");
             this.authenticate = Objects.requireNonNull(authenticate, "Initialize error: authenticate processor cannot be null");
             this.authorization = Objects.requireNonNull(authorization, "Initialize error: authorization processor cannot be null");
@@ -193,11 +198,17 @@ public final class SimpleAuthenticationService {
      * <p>
      * <b>ВАЖНО!: обязателен для предоставления корректной работы методов начинающихся с required*.</b>
      * </p>
-     *
+     * <p>
+     * Может быть вызван как до, так и после инициализации сервиса.
+     * Для обычных методов сервиса (не начинающихся с required*) установка не требуется.
+     * </p>
      * @param credentialsProvider источник реквизитов
      * @return результат операции установки {@link AuthResult}
      */
     public AuthResult setCredentialsProvider(ICredentialsProvider credentialsProvider) {
+        if (credentialsProvider == null) {
+            return AuthResult.failure("Credentials provider cannot be null. Credentials provider is not assigned");
+        }
         this.credentialsProvider.set(credentialsProvider);
         return AuthResult.success("Credentials provider set successfully");
     }
@@ -351,7 +362,7 @@ public final class SimpleAuthenticationService {
                 if (authResult.isSuccess()) {
                     principal.set(user.get());
                     isAuthenticated.set(true);
-                    return AuthResult.success("Authentication successful"   );
+                    return AuthResult.success("Authentication successful");
                 } else {
                     resetState();
                     return AuthResult.failure("Authentication failed - invalid credentials")
