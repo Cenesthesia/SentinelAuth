@@ -435,7 +435,8 @@ public final class SimpleAuthenticationService {
                 return AuthResult.success("Logout successful");
             }
 
-            return AuthResult.success("No Active session to logout");
+            resetState();
+            return AuthResult.success("No active session - logout operation had no effect");
         } catch (Exception e) {
             return AuthResult.failure(String.format("Unexpected error during logout. Error: %s", e.getMessage()), e);
         } finally {

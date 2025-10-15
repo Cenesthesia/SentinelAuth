@@ -229,6 +229,12 @@ public class SimpleAuthenticationServiceTest {
         assertEquals("Authenticate successful", result.getMessages().get(0));
         verify(userRepository).findByUsername("testUser");
         verify(authProcessor).authenticate(eq(testPrincipal), any(Credentials.class));
+        assertTrue(authService.getCurrentUsername().isPresent());
+
+        AuthResult resultVerify = authService.verifyAuth();
+        assertTrue(resultVerify.isSuccess());
+        assertTrue(resultVerify.hasMessages());
+        assertEquals("User is authenticated", resultVerify.getMessages().get(0));
     }
 
     @Test
@@ -242,6 +248,12 @@ public class SimpleAuthenticationServiceTest {
         assertTrue(result.hasMessages());
         assertEquals("The user was not found in the repository", result.getMessages().get(0));
         verify(userRepository).findByUsername("testUser");
+        assertTrue(authService.getCurrentUsername().isEmpty());
+
+        AuthResult resultVerify = authService.verifyAuth();
+        assertFalse(resultVerify.isSuccess());
+        assertTrue(resultVerify.hasMessages());
+        assertEquals("User is not authenticated", resultVerify.getMessages().get(0));
     }
 
     @Test
@@ -257,6 +269,12 @@ public class SimpleAuthenticationServiceTest {
         assertEquals("Authenticate failed - invalid credentials", result.getMessages().get(0));
         verify(userRepository).findByUsername("testUser");
         verify(authProcessor).authenticate(eq(testPrincipal), any(Credentials.class));
+        assertTrue(authService.getCurrentUsername().isEmpty());
+
+        AuthResult resultVerify = authService.verifyAuth();
+        assertFalse(resultVerify.isSuccess());
+        assertTrue(resultVerify.hasMessages());
+        assertEquals("User is not authenticated", resultVerify.getMessages().get(0));
     }
 
     @Test
@@ -270,13 +288,14 @@ public class SimpleAuthenticationServiceTest {
         assertTrue(result.hasMessages());
         assertEquals("SimpleAuthenticationService not initialized. Call initialize() before using",
                 result.getMessages().get(0));
+        assertTrue(authService.getCurrentUsername().isEmpty());
     }
 
     @Test
-    @DisplayName("authenticate should return failed AuthResult if an exception occurs during the authentication process")
-    void authenticateWhenThrowException() {
+    @DisplayName("authenticate should return failed AuthResult when user repository throws exception")
+    void authenticateWhenUserRepositoryThrowsException() {
         when(userRepository.findByUsername(any(String.class))).thenThrow(
-                new IllegalArgumentException("authenticate error"));
+                new RuntimeException("authenticate error"));
 
         AuthResult result = authService.authenticate(testCredentials);
 
@@ -286,6 +305,35 @@ public class SimpleAuthenticationServiceTest {
         assertEquals("Authentication error: authenticate error", result.getMessages().get(0));
         assertInstanceOf(RuntimeException.class, result.getExceptions().get(0));
         assertEquals("authenticate error", result.getExceptions().get(0).getMessage());
+        assertTrue(authService.getCurrentUsername().isEmpty());
+
+        AuthResult resultVerify = authService.verifyAuth();
+        assertFalse(resultVerify.isSuccess());
+        assertTrue(resultVerify.hasMessages());
+        assertEquals("User is not authenticated", resultVerify.getMessages().get(0));
+    }
+
+    @Test
+    @DisplayName("authenticate should return failed AuthResult when authenticate processor throws exception")
+    void authenticateWhenAuthenticateProcessorThrowsException() throws NoSuchMethodException {
+        when(userRepository.findByUsername("testUser")).thenReturn(Optional.of(testPrincipal));
+        when(authProcessor.authenticate(eq(testPrincipal), any(Credentials.class))).thenThrow(
+                new RuntimeException("authenticate error"));
+
+        AuthResult result = authService.authenticate(testCredentials);
+
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertTrue(result.hasExceptions());
+        assertEquals("Authentication error: authenticate error", result.getMessages().get(0));
+        assertInstanceOf(RuntimeException.class, result.getExceptions().get(0));
+        assertEquals("authenticate error", result.getExceptions().get(0).getMessage());
+        assertTrue(authService.getCurrentUsername().isEmpty());
+
+        AuthResult resultVerify = authService.verifyAuth();
+        assertFalse(resultVerify.isSuccess());
+        assertTrue(resultVerify.hasMessages());
+        assertEquals("User is not authenticated", resultVerify.getMessages().get(0));
     }
 
     //==================================== requireAuthenticate tests ==========================================
@@ -308,6 +356,12 @@ public class SimpleAuthenticationServiceTest {
         verify(credentialsProvider).provideCredentials();
         verify(userRepository).findByUsername("testUser");
         verify(authProcessor).authenticate(eq(testPrincipal), eq(testCredentials));
+        assertTrue(authService.getCurrentUsername().isPresent());
+
+        AuthResult resultVerify = authService.verifyAuth();
+        assertTrue(resultVerify.isSuccess());
+        assertTrue(resultVerify.hasMessages());
+        assertEquals("User is authenticated", resultVerify.getMessages().get(0));
     }
 
     @Test
@@ -321,6 +375,7 @@ public class SimpleAuthenticationServiceTest {
         assertTrue(result.hasMessages());
         assertEquals("SimpleAuthenticationService not initialized. Call initialize() before using",
                 result.getMessages().get(0));
+        assertTrue(authService.getCurrentUsername().isEmpty());
     }
 
     @Test
@@ -332,5 +387,136 @@ public class SimpleAuthenticationServiceTest {
         assertTrue(result.hasMessages());
         assertEquals("Source of credentials not specified. Call setCredentialsProvider() before using",
                 result.getMessages().get(0));
+        assertTrue(authService.getCurrentUsername().isEmpty());
+
+        AuthResult resultVerify = authService.verifyAuth();
+        assertFalse(resultVerify.isSuccess());
+        assertTrue(resultVerify.hasMessages());
+        assertEquals("User is not authenticated", resultVerify.getMessages().get(0));
+    }
+
+    @Test
+    @DisplayName("requireAuthenticate should return failed AuthResult when credentials provider throws exception")
+    void requireAuthenticateWhenCredentialsProviderThrowException() {
+        authService.setCredentialsProvider(credentialsProvider);
+        when(credentialsProvider.provideCredentials()).thenThrow(new RuntimeException("Provider error"));
+
+        AuthResult result = authService.requireAuthenticate();
+
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertTrue(result.hasExceptions());
+        assertEquals("Failed to obtain credentials. Exception: Provider error", result.getMessages().get(0));
+        assertInstanceOf(RuntimeException.class, result.getExceptions().get(0));
+        assertEquals("Provider error", result.getExceptions().get(0).getMessage());
+        assertTrue(authService.getCurrentUsername().isEmpty());
+
+        AuthResult resultVerify = authService.verifyAuth();
+        assertFalse(resultVerify.isSuccess());
+        assertTrue(resultVerify.hasMessages());
+        assertEquals("User is not authenticated", resultVerify.getMessages().get(0));
+    }
+
+    @Test
+    @DisplayName("requireAuthenticate should return failed AuthResult when user repository throws exception")
+    void requireAuthenticateWhenUserRepositoryThrowsException() {
+        authService.setCredentialsProvider(credentialsProvider);
+        when(credentialsProvider.provideCredentials()).thenReturn(testCredentials);
+        when(userRepository.findByUsername(any(String.class))).thenThrow(
+                new RuntimeException("authenticate error"));
+
+        AuthResult result = authService.requireAuthenticate();
+
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertTrue(result.hasExceptions());
+        assertEquals("Authentication error: authenticate error", result.getMessages().get(0));
+        assertInstanceOf(RuntimeException.class, result.getExceptions().get(0));
+        assertEquals("authenticate error", result.getExceptions().get(0).getMessage());
+        assertTrue(authService.getCurrentUsername().isEmpty());
+
+        AuthResult resultVerify = authService.verifyAuth();
+        assertFalse(resultVerify.isSuccess());
+        assertTrue(resultVerify.hasMessages());
+        assertEquals("User is not authenticated", resultVerify.getMessages().get(0));
+    }
+
+    @Test
+    @DisplayName("requireAuthenticate should return failed AuthResult when authenticate processor throws exception")
+    void requireAuthenticateWhenAuthenticateProcessorThrowsException() throws NoSuchMethodException {
+        authService.setCredentialsProvider(credentialsProvider);
+        when(credentialsProvider.provideCredentials()).thenReturn(testCredentials);
+        when(userRepository.findByUsername("testUser")).thenReturn(Optional.of(testPrincipal));
+        when(authProcessor.authenticate(eq(testPrincipal), any(Credentials.class))).thenThrow(
+                new RuntimeException("authenticate error"));
+
+        AuthResult result = authService.requireAuthenticate();
+
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertTrue(result.hasExceptions());
+        assertEquals("Authentication error: authenticate error", result.getMessages().get(0));
+        assertInstanceOf(RuntimeException.class, result.getExceptions().get(0));
+        assertEquals("authenticate error", result.getExceptions().get(0).getMessage());
+        assertTrue(authService.getCurrentUsername().isEmpty());
+
+        AuthResult resultVerify = authService.verifyAuth();
+        assertFalse(resultVerify.isSuccess());
+        assertTrue(resultVerify.hasMessages());
+        assertEquals("User is not authenticated", resultVerify.getMessages().get(0));
+    }
+
+    //========================================== logout tests =================================================
+
+    @Test
+    @DisplayName("logout should return successful AuthResult when user is authenticated")
+    void logoutWhenUserIsAuthenticated() {
+        when(userRepository.findByUsername("testUser")).thenReturn(Optional.of(testPrincipal));
+        when(authProcessor.authenticate(eq(testPrincipal), any(Credentials.class))).thenReturn(
+                AuthResult.success("Authentication successful"));
+        AuthResult resultAuth = authService.authenticate(testCredentials);
+        assertTrue(resultAuth.isSuccess());
+
+        AuthResult result = authService.logout();
+
+        assertTrue(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertEquals("Logout successful", result.getMessages().get(0));
+        assertTrue(authService.getCurrentUsername().isEmpty());
+
+        AuthResult resultVerify = authService.verifyAuth();
+        assertFalse(resultVerify.isSuccess());
+        assertTrue(resultVerify.hasMessages());
+        assertEquals("User is not authenticated", resultVerify.getMessages().get(0));
+    }
+
+    @Test
+    @DisplayName("logout should return successful AuthResult with warning when no active session exists")
+    void logoutWhenNoActiveSession() {
+        AuthResult result = authService.logout();
+
+        assertTrue(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertEquals("No active session - logout operation had no effect", result.getMessages().get(0));
+        assertTrue(authService.getCurrentUsername().isEmpty());
+
+        AuthResult resultVerify = authService.verifyAuth();
+        assertFalse(resultVerify.isSuccess());
+        assertTrue(resultVerify.hasMessages());
+        assertEquals("User is not authenticated", resultVerify.getMessages().get(0));
+    }
+
+    @Test
+    @DisplayName("logout should return failed AuthResult when service not initialized")
+    void logoutWhenServiceNotInitialized() throws Exception {
+        authService = createFreshServiceInstance();
+
+        AuthResult result = authService.logout();
+
+        assertFalse(result.isSuccess());
+        assertTrue(result.hasMessages());
+        assertEquals("SimpleAuthenticationService not initialized. Call initialize() before using",
+                result.getMessages().get(0));
+        assertTrue(authService.getCurrentUsername().isEmpty());
     }
 }
