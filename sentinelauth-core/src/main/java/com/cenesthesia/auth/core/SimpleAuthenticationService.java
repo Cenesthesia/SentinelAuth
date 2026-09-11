@@ -547,6 +547,9 @@ public final class SimpleAuthenticationService {
     /**
      * Проверяет наличие роли у аутентифицированного пользователя, при необходимости выполняя аутентификацию.
      * <p>
+     * <b>ВАЖНО: запрашивает у пользователя роль, но не выполняет аутентификацию (статус не сохраняется)</b>
+     * </p>
+     * <p>
      * <b>Поткобезопасность: </b>использует read lock, но может временно переходить на write lock для выполнения
      * аутентификации.
      * </p>
@@ -579,6 +582,9 @@ public final class SimpleAuthenticationService {
             }
 
             AuthResult result = authorization.hasRole(principal.get(), role);
+            lock.readLock().unlock();
+            logout();
+            lock.readLock().lock();
             return result.isSuccess() ?
                     AuthResult.success("User has required role: " + role) :
                     AuthResult.failure("User does not have required role: " + role)
